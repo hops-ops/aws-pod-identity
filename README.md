@@ -43,13 +43,9 @@ metadata:
   name: example-pod-identity
 spec:
   clusterName: cluster-x
-  aws:
-    providerConfig: cluster-x
   accountId: "123456789012"
   region: us-west-2
   name: loki
-  rolePrefix: podid-
-  policyPrefix: podid-
   permissionsBoundary: "arn:aws:iam::123456789012:policy/eks-permissions-boundary"
   tags:
     workload: example
