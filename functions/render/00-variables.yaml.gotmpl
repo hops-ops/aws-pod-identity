@@ -1,0 +1,31 @@
+# Get the observed composite resource into a variable.
+{{ $xr := getCompositeResource . }}
+{{ $spec := $xr.spec }}
+
+{{ $clusterName := $spec.clusterName | default "" }}
+{{ $deletionPolicy := $spec.deletionPolicy | default "Delete" }}
+
+# Provider Config (defaults to clusterName or "default")
+{{ $aws := $spec.aws | default (dict) }}
+{{ $awsProviderConfig := $aws.providerConfig | default $clusterName | default "default" }}
+
+{{ $accountId := $spec.accountId }}
+{{ $name := $spec.name }}
+{{ $region := $spec.region }}
+
+{{ $rolePrefix := $spec.rolePrefix | default "" }}
+{{ $policyPrefix := $spec.policyPrefix | default "" }}
+{{ $permissionsBoundary := $spec.permissionsBoundary }}
+{{ $policy := $spec.policy }}
+
+{{ $defaultAWSTags := dict "hops" "true" }}
+{{ $tags := merge $defaultAWSTags $spec.tags }}
+
+{{ $serviceAccount := $spec.serviceAccount | default (dict) }}
+{{ $serviceAccountName := $serviceAccount.name | default "" }}
+{{ $serviceAccountNamespace := $serviceAccount.namespace | default "" }}
+
+{{ $roleName := printf "%s%s-%s" $rolePrefix $clusterName $name }}
+{{ $policyName := printf "%s%s-%s" $policyPrefix $clusterName $name }}
+{{ $roleArn := printf "arn:aws:iam::%s:role/%s" $accountId $roleName }}
+{{ $podIdentitySourceArn := printf "arn:aws:eks:%s:%s:podidentityassociation/*" $region $accountId }}

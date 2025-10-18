@@ -1,0 +1,46 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+---
+
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: Role
+metadata:
+  name: {{ $roleName }}
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "pod-identity-role"
+  labels:
+    podIdentity: {{ $name }}
+spec:
+  providerConfigRef:
+    name: {{ $awsProviderConfig }}
+  deletionPolicy: {{ $deletionPolicy }}
+  forProvider:
+    assumeRolePolicy: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "pods.eks.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole",
+            "Condition": {
+              "StringEquals": {
+                "aws:SourceAccount": "{{ $accountId }}"
+              },
+              "ArnLike": {
+                "aws:SourceArn": "{{ $podIdentitySourceArn }}"
+              }
+            }
+          }
+        ]
+      }
+    {{- if $permissionsBoundary }}
+    permissionsBoundary: {{ $permissionsBoundary }}
+    {{- end }}
+    {{- if $tags }}
+    tags:
+      {{ toYaml $tags | nindent 6 }}
+    {{- end }}

@@ -1,0 +1,21 @@
+---
+
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: RolePolicyAttachment
+metadata:
+  name: {{ $name }}
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "pod-identity-role-policy-attachment"
+spec:
+  providerConfigRef:
+    name: {{ $awsProviderConfig }}
+  deletionPolicy: {{ $deletionPolicy }}
+  forProvider:
+    policyArnSelector:
+      matchControllerRef: true
+      matchLabels:
+        podIdentity: {{ $name }}
+    roleSelector:
+      matchControllerRef: true
+      matchLabels:
+        podIdentity: {{ $name }}

@@ -1,0 +1,23 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+---
+
+apiVersion: eks.aws.m.upbound.io/v1beta1
+kind: PodIdentityAssociation
+metadata:
+  name: {{ $clusterName }}-{{ $serviceAccountNamespace }}-{{ $serviceAccountName }}-pod-identity
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "pod-identity-association"
+  labels:
+    podIdentity: {{ $name }}
+spec:
+  providerConfigRef:
+    name: {{ $awsProviderConfig }}
+  deletionPolicy: {{ $deletionPolicy }}
+  forProvider:
+    clusterName: {{ $clusterName }}
+    namespace: {{ $serviceAccountNamespace }}
+    region: {{ $region }}
+    roleArn: {{ $roleArn }}
+    serviceAccount: {{ $serviceAccountName }}

@@ -1,0 +1,27 @@
+apiVersion: hops.ops.com.ai/v1alpha1
+kind: XPodIdentity
+metadata:
+  name: example-pod-identity
+spec:
+  clusterName: cluster-x
+  accountId: "123456789012"
+  region: us-west-2
+  name: "loki"
+  policy: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:GetObject"
+          ],
+          "Resource": [
+            "arn:aws:s3:::example-loki-chunks/*"
+          ]
+        }
+      ]
+    }
+  serviceAccount:
+    namespace: "observability"
+    name: "loki"

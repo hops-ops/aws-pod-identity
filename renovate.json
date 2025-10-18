@@ -1,0 +1,6 @@
+{
+  "extends": ["config:recommended", ":dependencyDashboard"],
+  "crossplane": {
+    "fileMatch": ["\\.yaml$", "\\.yaml\\.gotmpl$"]
+  }
+}

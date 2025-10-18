@@ -1,0 +1,41 @@
+apiVersion: hops.ops.com.ai/v1alpha1
+kind: XPodIdentity
+metadata:
+  name: example-pod-identity
+spec:
+  clusterName: cluster-x
+  aws:
+    providerConfig: cluster-x
+  accountId: "123456789012"
+  region: us-west-2
+  name: "loki"
+  rolePrefix: "podid-"
+  policyPrefix: "podid-"
+  permissionsBoundary: "arn:aws:iam::123456789012:policy/eks-permissions-boundary"
+  policy: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Sid": "LokiStorage",
+          "Effect": "Allow",
+          "Action": [
+            "s3:ListBucket",
+            "s3:PutObject",
+            "s3:GetObject",
+            "s3:DeleteObject"
+          ],
+          "Resource": [
+            "arn:aws:s3:::example-loki-chunks",
+            "arn:aws:s3:::example-loki-chunks/*",
+            "arn:aws:s3:::example-loki-ruler",
+            "arn:aws:s3:::example-loki-ruler/*"
+          ]
+        }
+      ]
+    }
+  tags:
+    environment: demo
+  serviceAccount:
+    namespace: "observability"
+    name: "loki"

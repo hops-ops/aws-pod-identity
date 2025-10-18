@@ -1,0 +1,22 @@
+apiVersion: pkg.crossplane.io/v1
+kind: Configuration
+metadata:
+  name: config-pod-identity
+spec:
+  package: ghcr.io/hops-ops/config-pod-identity:{{ .Values.version }}
+  packagePullSecrets:
+    - name: ghcr
+  skipDependencyResolution: {{ .Values.skipDependencyResolution }}
+
+---
+
+# skipDependencyResolution false would rename this function; keep explicit name to match package path.
+apiVersion: pkg.crossplane.io/v1
+kind: Function
+metadata:
+  name: hops-ops-config-pod-identityrender
+spec:
+  package: ghcr.io/hops-ops/config-pod-identity_render:{{ .Values.version }}
+  packagePullSecrets:
+    - name: ghcr
+  skipDependencyResolution: {{ .Values.skipDependencyResolution }}

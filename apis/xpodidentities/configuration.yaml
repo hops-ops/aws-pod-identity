@@ -1,0 +1,16 @@
+apiVersion: meta.pkg.crossplane.io/v1alpha1
+kind: Configuration
+metadata:
+  name: config-pod-identity
+  annotations:
+    meta.crossplane.io/maintainer: Patrick Lee Scott
+    meta.crossplane.io/source: github.com/hops-ops/config-pod-identity
+    meta.crossplane.io/description: A configuration package that defines hops's AWS Pod Identity association.
+spec:
+  dependsOn:
+    - provider: xpkg.crossplane.io/crossplane-contrib/provider-aws-eks
+      version: ">=v2.1.1"
+    - provider: xpkg.crossplane.io/crossplane-contrib/provider-aws-iam
+      version: ">=v2.1.1"
+    - function: xpkg.crossplane.io/crossplane-contrib/function-auto-ready
+      version: ">=v0.5.1"

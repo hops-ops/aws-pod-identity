@@ -1,0 +1,21 @@
+---
+
+apiVersion: iam.aws.upbound.io/v1beta1
+kind: Policy
+metadata:
+  name: {{ $policyName }}
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "pod-identity-policy"
+  labels:
+    podIdentity: {{ $name }}
+spec:
+  providerConfigRef:
+    name: {{ $awsProviderConfig }}
+  deletionPolicy: {{ $deletionPolicy }}
+  forProvider:
+    policy: |
+      {{- $policy | nindent 6 }}
+    {{- if $tags }}
+    tags:
+      {{ toYaml $tags | nindent 6 }}
+    {{- end }}

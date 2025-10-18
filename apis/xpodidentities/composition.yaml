@@ -1,0 +1,16 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: config-pod-identity-v1alpha1-1
+spec:
+  compositeTypeRef:
+    apiVersion: hops.ops.com.ai/v1alpha1
+    kind: XPodIdentity
+  mode: Pipeline
+  pipeline:
+    - functionRef:
+        name: hops-ops-config-pod-identityrender
+      step: render
+    - functionRef:
+        name: crossplane-contrib-function-auto-ready
+      step: crossplane-contrib-function-auto-ready

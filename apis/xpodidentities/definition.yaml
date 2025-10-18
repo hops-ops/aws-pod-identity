@@ -1,0 +1,76 @@
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+  name: xpodidentities.hops.ops.com.ai
+spec:
+  group: hops.ops.com.ai
+  names:
+    categories:
+      - crossplane
+    kind: XPodIdentity
+    plural: xpodidentities
+  scope: Cluster
+  versions:
+    - name: v1alpha1
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          description: XPodIdentity defines an AWS IAM role and EKS Pod Identity association.
+          properties:
+            spec:
+              description: XPodIdentitySpec defines the desired state.
+              properties:
+                accountId:
+                  type: string
+                aws:
+                  properties:
+                    providerConfig:
+                      type: string
+                  type: object
+                clusterName:
+                  type: string
+                deletionPolicy:
+                  enum:
+                    - Delete
+                    - Orphan
+                  type: string
+                name:
+                  type: string
+                permissionsBoundary:
+                  type: string
+                policy:
+                  type: string
+                policyPrefix:
+                  type: string
+                region:
+                  type: string
+                rolePrefix:
+                  type: string
+                serviceAccount:
+                  properties:
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                  required:
+                    - name
+                    - namespace
+                  type: object
+                tags:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+              required:
+                - accountId
+                - clusterName
+                - name
+                - policy
+                - region
+                - serviceAccount
+              type: object
+            status:
+              description: XPodIdentityStatus defines the observed state.
+              type: object
+          required:
+            - spec
+          type: object
+      served: true
