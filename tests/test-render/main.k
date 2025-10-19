@@ -44,7 +44,7 @@ _items = [
                     }
                 },
                 {
-                    apiVersion: "eks.aws.m.upbound.io/v1beta1"
+                    apiVersion: "eks.aws.upbound.io/v1beta1"
                     kind: "PodIdentityAssociation"
                     metadata: {
                         name: "cluster-x-observability-loki-pod-identity"
@@ -92,7 +92,7 @@ _items = [
                     }
                 },
                 {
-                    apiVersion: "eks.aws.m.upbound.io/v1beta1"
+                    apiVersion: "eks.aws.upbound.io/v1beta1"
                     kind: "PodIdentityAssociation"
                     metadata: {
                         name: "cluster-x-observability-loki-pod-identity"
