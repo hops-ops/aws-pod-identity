@@ -1,25 +1,25 @@
-# AWS Settings
-{{ $accountId := $spec.accountId }}
-{{ $name := $spec.name }}
-{{ $region := $spec.region }}
-
-# Optional prefixes and policy inputs
-{{ $rolePrefix := $spec.rolePrefix | default "" }}
-{{ $policyPrefix := $spec.policyPrefix | default "" }}
-{{ $permissionsBoundary := $spec.permissionsBoundary }}
-{{ $policy := $spec.policy }}
+# AWS settings and optional inputs
+{{ $region := $parameters.region | default "" }}
+{{ $permissionsBoundaryArn := $parameters.permissionsBoundaryArn }}
+{{ $inlinePolicies := $parameters.inlinePolicy | default (list) }}
+{{ $managedPolicyArns := $parameters.managedPolicyArns | default (list) }}
+{{ $tagsInput := $parameters.tags | default (dict) }}
 
 # AWS tags merge caller input with the default hops tag.
 {{ $defaultAWSTags := dict "hops" "true" }}
-{{ $tags := merge $defaultAWSTags ($spec.tags | default (dict)) }}
+{{ $tags := merge $defaultAWSTags $tagsInput }}
 
 # Service account target
-{{ $serviceAccount := $spec.serviceAccount | default (dict) }}
+{{ $serviceAccount := $parameters.serviceAccount | default (dict) }}
 {{ $serviceAccountName := $serviceAccount.name | default "" }}
 {{ $serviceAccountNamespace := $serviceAccount.namespace | default "" }}
 
-# Derived names and ARNs
-{{ $roleName := printf "%s%s-%s" $rolePrefix $clusterName $name }}
-{{ $policyName := printf "%s%s-%s" $policyPrefix $clusterName $name }}
-{{ $roleArn := printf "arn:aws:iam::%s:role/%s" $accountId $roleName }}
-{{ $podIdentitySourceArn := printf "arn:aws:eks:%s:%s:podidentityassociation/*" $region $accountId }}
+# Cluster name references
+{{ $clusterNameRef := $parameters.clusterNameRef }}
+{{ $clusterNameSelector := $parameters.clusterNameSelector }}
+
+# Derived names
+{{ $roleResourceName := printf "%s-role" $xrName }}
+{{ $podIdentityAssociationName := printf "%s-pod-identity" $xrName }}
+{{ $iamRoleNameSeed := $clusterName | default $xrName }}
+{{ $iamRoleName := $parameters.roleName | default $iamRoleNameSeed }}

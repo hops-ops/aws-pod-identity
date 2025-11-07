@@ -13,29 +13,26 @@ _items = [
                     apiVersion: "iam.aws.upbound.io/v1beta1"
                     kind: "Role"
                     metadata: {
-                        name: "podid-cluster-x-loki"
+                        name: "example-pod-identity-role"
                     }
                     spec: {
                         providerConfigRef: {
                             name: "cluster-x"
                         }
                         forProvider: {
+                            name: "podid-cluster-x-loki"
+                            managedPolicyArns: [
+                                "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+                            ]
                             permissionsBoundary: "arn:aws:iam::123456789012:policy/eks-permissions-boundary"
-                            tags: {
-                                environment: "demo"
-                                hops: "true"
-                            }
-                        }
-                    }
-                },
-                {
-                    apiVersion: "iam.aws.upbound.io/v1beta1"
-                    kind: "Policy"
-                    metadata: {
-                        name: "podid-cluster-x-loki"
-                    }
-                    spec: {
-                        forProvider: {
+                            inlinePolicy: [
+                                {
+                                    name: "loki-storage"
+                                },
+                                {
+                                    name: "allow-read-secrets"
+                                }
+                            ]
                             tags: {
                                 environment: "demo"
                                 hops: "true"
@@ -47,7 +44,7 @@ _items = [
                     apiVersion: "eks.aws.upbound.io/v1beta1"
                     kind: "PodIdentityAssociation"
                     metadata: {
-                        name: "cluster-x-observability-loki-pod-identity"
+                        name: "example-pod-identity-pod-identity"
                     }
                     spec: {
                         providerConfigRef: {
@@ -57,7 +54,12 @@ _items = [
                             clusterName: "cluster-x"
                             namespace: "observability"
                             region: "us-west-2"
-                            roleArn: "arn:aws:iam::123456789012:role/podid-cluster-x-loki"
+                            roleArnSelector: {
+                                matchControllerRef: True
+                                matchLabels: {
+                                    "aws.hops.ops.com.ai/pod-identity": "example-pod-identity"
+                                }
+                            }
                             serviceAccount: "loki"
                         }
                     }
@@ -78,13 +80,19 @@ _items = [
                     apiVersion: "iam.aws.upbound.io/v1beta1"
                     kind: "Role"
                     metadata: {
-                        name: "cluster-x-loki"
+                        name: "example-pod-identity-role"
                     }
                     spec: {
                         providerConfigRef: {
                             name: "cluster-x"
                         }
                         forProvider: {
+                            name: "cluster-x"
+                            inlinePolicy: [
+                                {
+                                    name: "default"
+                                }
+                            ]
                             tags: {
                                 hops: "true"
                             }
@@ -95,7 +103,7 @@ _items = [
                     apiVersion: "eks.aws.upbound.io/v1beta1"
                     kind: "PodIdentityAssociation"
                     metadata: {
-                        name: "cluster-x-observability-loki-pod-identity"
+                        name: "example-pod-identity-pod-identity"
                     }
                     spec: {
                         providerConfigRef: {
@@ -105,7 +113,12 @@ _items = [
                             clusterName: "cluster-x"
                             namespace: "observability"
                             region: "us-west-2"
-                            roleArn: "arn:aws:iam::123456789012:role/cluster-x-loki"
+                            roleArnSelector: {
+                                matchControllerRef: True
+                                matchLabels: {
+                                    "aws.hops.ops.com.ai/pod-identity": "example-pod-identity"
+                                }
+                            }
                             serviceAccount: "loki"
                         }
                     }

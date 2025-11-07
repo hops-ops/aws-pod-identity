@@ -1,12 +1,12 @@
-# config-pod-identity
+# configuration-aws-pod-identity
 
-`config-pod-identity` is a Crossplane configuration package that provisions IAM roles, policies, and Amazon EKS Pod Identity associations for Kubernetes service accounts. It publishes the `XPodIdentity` composite resource definition so platform teams can grant AWS permissions to workloads without hand-crafting IAM resources.
+`configuration-aws-pod-identity` is a Crossplane configuration package that provisions IAM roles, policies, and Amazon EKS Pod Identity associations for Kubernetes service accounts. It publishes the `XPodIdentity` composite resource definition so platform teams can grant AWS permissions to workloads without hand-crafting IAM resources.
 
 ## Features
 
 - Creates IAM roles with the EKS Pod Identity trust policy.
-- Attaches inline IAM policies supplied by the caller.
-- Supports optional `rolePrefix`, `policyPrefix`, and permissions boundaries.
+- Attaches inline IAM policies supplied by the caller and optional managed policy ARNs.
+- Supports optional permissions boundaries and custom provider configs.
 - Creates `PodIdentityAssociation` resources that map IAM roles to Kubernetes service accounts.
 - Ships with automation for validation, testing, and package publishing.
 
@@ -26,9 +26,9 @@
 apiVersion: pkg.crossplane.io/v1
 kind: Configuration
 metadata:
-  name: config-pod-identity
+  name: configuration-aws-pod-identity
 spec:
-  package: ghcr.io/hops-ops/config-pod-identity:latest
+  package: ghcr.io/hops-ops/configuration-aws-pod-identity:latest
   packagePullSecrets:
     - name: ghcr
   skipDependencyResolution: true
@@ -37,39 +37,42 @@ spec:
 ## Example Composite
 
 ```yaml
-apiVersion: hops.ops.com.ai/v1alpha1
+apiVersion: aws.hops.ops.com.ai/v1alpha1
 kind: XPodIdentity
 metadata:
   name: example-pod-identity
 spec:
-  clusterName: cluster-x
-  accountId: "123456789012"
-  region: us-west-2
-  name: loki
-  permissionsBoundary: "arn:aws:iam::123456789012:policy/eks-permissions-boundary"
-  tags:
-    workload: example
-  serviceAccount:
-    namespace: observability
-    name: loki
-  policy: |
-    {
-      "Version": "2012-10-17",
-      "Statement": [
-        {
-          "Effect": "Allow",
-          "Action": [
-            "s3:ListBucket",
-            "s3:GetObject",
-            "s3:PutObject"
-          ],
-          "Resource": [
-            "arn:aws:s3:::example-loki-chunks",
-            "arn:aws:s3:::example-loki-chunks/*"
-          ]
-        }
-      ]
-    }
+  parameters:
+    clusterName: cluster-x
+    region: us-west-2
+    serviceAccount:
+      namespace: observability
+      name: loki
+    permissionsBoundaryArn: "arn:aws:iam::123456789012:policy/eks-permissions-boundary"
+    managedPolicyArns:
+      - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+    inlinePolicy:
+      - name: loki-storage
+        policy: |
+          {
+              "Version": "2012-10-17",
+              "Statement": [
+                  {
+                      "Effect": "Allow",
+                      "Action": [
+                          "s3:ListBucket",
+                          "s3:GetObject",
+                          "s3:PutObject"
+                      ],
+                      "Resource": [
+                          "arn:aws:s3:::example-loki-chunks",
+                          "arn:aws:s3:::example-loki-chunks/*"
+                      ]
+                  }
+              ]
+          }
+    tags:
+      workload: example
 ```
 
 ## Local Development

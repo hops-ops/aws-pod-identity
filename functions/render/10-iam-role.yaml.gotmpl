@@ -6,39 +6,50 @@
 apiVersion: iam.aws.upbound.io/v1beta1
 kind: Role
 metadata:
-  name: {{ $roleName }}
+  name: {{ $roleResourceName }}
   annotations:
     gotemplating.fn.crossplane.io/composition-resource-name: "pod-identity-role"
   labels:
-    podIdentity: {{ $name }}
+    aws.hops.ops.com.ai/pod-identity: {{ $xrName }}
 spec:
   providerConfigRef:
     name: {{ $awsProviderConfig }}
   deletionPolicy: {{ $deletionPolicy }}
   forProvider:
+    name: {{ $iamRoleName }}
     assumeRolePolicy: |
       {
-        "Version": "2012-10-17",
-        "Statement": [
+        "Version":"2012-10-17",
+        "Statement":[
           {
-            "Effect": "Allow",
-            "Principal": {
-              "Service": "pods.eks.amazonaws.com"
+            "Sid":"AllowEksAuthToAssumeRoleForPodIdentity",
+            "Effect":"Allow",
+            "Principal":{
+              "Service":"pods.eks.amazonaws.com"
             },
-            "Action": "sts:AssumeRole",
-            "Condition": {
-              "StringEquals": {
-                "aws:SourceAccount": "{{ $accountId }}"
-              },
-              "ArnLike": {
-                "aws:SourceArn": "{{ $podIdentitySourceArn }}"
-              }
-            }
+            "Action":[
+              "sts:AssumeRole",
+              "sts:TagSession"
+            ]
           }
         ]
       }
-    {{- if $permissionsBoundary }}
-    permissionsBoundary: {{ $permissionsBoundary }}
+    {{- if $inlinePolicies }}
+    inlinePolicy:
+      {{- range $inlinePolicy := $inlinePolicies }}
+      - name: {{ $inlinePolicy.name }}
+        policy: |
+          {{- $inlinePolicy.policy | nindent 10 }}
+      {{- end }}
+    {{- end }}
+    {{- if $managedPolicyArns }}
+    managedPolicyArns:
+      {{- range $managedPolicyArns }}
+      - {{ . }}
+      {{- end }}
+    {{- end }}
+    {{- if $permissionsBoundaryArn }}
+    permissionsBoundary: {{ $permissionsBoundaryArn }}
     {{- end }}
     {{- if $tags }}
     tags:

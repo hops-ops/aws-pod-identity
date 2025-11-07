@@ -1,10 +1,12 @@
 # Get the observed composite resource into a variable.
 {{ $xr := getCompositeResource . }}
-{{ $spec := $xr.spec }}
+{{ $spec := $xr.spec | default (dict) }}
+{{ $parameters := $spec.parameters | default (dict) }}
+{{ $metadata := $xr.metadata | default (dict) }}
+{{ $xrName := $metadata.name | default "" }}
 
-{{ $aws := $spec.aws | default (dict) }}
-{{ $clusterName := $spec.clusterName }}
-{{ $deletionPolicy := $spec.deletionPolicy | default "Delete" }}
+{{ $clusterName := $parameters.clusterName | default "" }}
+{{ $deletionPolicy := $parameters.deletionPolicy | default "Delete" }}
 
 # Provider Config defaults to clusterName when provided, otherwise "default".
-{{ $awsProviderConfig := $aws.providerConfig | default $clusterName | default "default" }}
+{{ $awsProviderConfig := $parameters.providerConfigName | default $clusterName | default "default" }}

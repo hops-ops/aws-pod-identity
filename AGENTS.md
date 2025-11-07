@@ -17,35 +17,36 @@ This repository publishes the `XPodIdentity` Crossplane configuration package. U
 
 `apis/xpodidentities` defines the composite schema and composition. The contract mirrors other hops configs:
 
-- `clusterName` seeds providerConfig defaults. When unset, `aws.providerConfig` falls back to this value, otherwise `"default"`.
-- `aws` groups all AWS inputs. It exposes `providerConfig` plus a nested `config` with IAM-specific settings.
-- Optional flags (for example `policy`) should be explicit. If a value must be provided, let the template fail rather than silently default.
+- `spec.parameters.clusterName` seeds providerConfig defaults. When unset, `providerConfigName` falls back to this value, otherwise `"default"`.
+- Inputs are grouped under `spec.parameters` to mirror other Upbound configurations.
+- Optional flags (for example `permissionsBoundaryArn`) should be explicit. If a value must be provided, let the template fail rather than silently default.
 - AWS tags always merge caller-supplied tags with the default `{"hops": "true"}` map.
 
 The composite accepts:
 
-- `accountId` (string): AWS account that owns the IAM role.
-- `name` (string): Logical name used by IAM resources.
-- `namespace` and `serviceAccountName`: Target Kubernetes service account.
-- `rolePrefix` and `policyPrefix`: Optional prefixes for IAM resources.
-- `permissionsBoundary`: Optional IAM permissions boundary ARN.
-- `policy`: Inline JSON policy document attached to the IAM role.
-- `tags`: Free-form AWS tags (merged with the default hops tag).
-- `region`: AWS region hosting the EKS cluster.
+- `region` (string): AWS region hosting the EKS cluster.
+- `clusterName`, `clusterNameRef`, or `clusterNameSelector`: Identify which EKS cluster to bind.
+- `serviceAccount` (object): Target Kubernetes service account (name + namespace).
+- `inlinePolicy` (array): Exclusive inline IAM policies applied to the role.
+- `managedPolicyArns` (set of strings): Managed policy ARNs to attach.
+- `permissionsBoundaryArn` (string): Optional IAM permissions boundary.
+- `roleName` (string): Optional AWS role name override.
+- `providerConfigName` (string): Optional provider config override; falls back to cluster name or `default`.
+- `tags` (map): Free-form AWS tags (merged with the default hops tag).
 
 ## Rendering Pipeline
 
 - `00-variables.yaml.gotmpl` hoists shared values (`clusterName`, provider configs, deletion policy) into scope. Always default optional values with `default`.
-- `01-variables-aws.yaml.gotmpl` extracts AWS-specific inputs such as account ID, region, prefixes, and tag maps.
-- Resource templates (`10-iam-role.yaml.gotmpl`, `11-iam-policy.yaml.gotmpl`, etc.) consume only previously declared variables. Leave numeric gaps so future inserts remain readable.
+- `01-variables-aws.yaml.gotmpl` extracts AWS-specific inputs such as region, inline policies, and tag maps.
+- Resource templates (`10-iam-role.yaml.gotmpl`, `20-pod-identity-association.yaml.gotmpl`, etc.) consume only previously declared variables. Leave numeric gaps so future inserts remain readable.
 - Use straightforward string interpolation for names; avoid complex ternaries and keep renovate-friendly chart declarations out of variables.
 
 ## AWS Integrations
 
 - IAM roles assume the pods.amazonaws.com principal required by EKS Pod Identity. Do not revert to legacy IRSA trust policies.
-- The inline policy is passed through verbatim from `spec.policy`. Validate JSON before committing updates.
-- IAM resources use `rolePrefix` / `policyPrefix` combined with `clusterName` and `name` to keep identities unique.
-- Pod Identity associations reference the IAM role ARN directly—prefer explicit names over selectors when the API allows it.
+- Inline policies are passed through verbatim from `spec.parameters.inlinePolicy[*].policy`. Validate JSON before committing updates.
+- IAM resources default the AWS role name from the cluster or XR name unless overridden by `roleName`.
+- Pod Identity associations resolve the IAM role using the shared `aws.hops.ops.com.ai/pod-identity` label—prefer labels over explicit ARNs to keep resources composable.
 
 ## Development Workflow
 

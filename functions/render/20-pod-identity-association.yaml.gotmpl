@@ -6,18 +6,31 @@
 apiVersion: eks.aws.upbound.io/v1beta1
 kind: PodIdentityAssociation
 metadata:
-  name: {{ $clusterName }}-{{ $serviceAccountNamespace }}-{{ $serviceAccountName }}-pod-identity
+  name: {{ $podIdentityAssociationName }}
   annotations:
     gotemplating.fn.crossplane.io/composition-resource-name: "pod-identity-association"
   labels:
-    podIdentity: {{ $name }}
+    aws.hops.ops.com.ai/pod-identity: {{ $xrName }}
 spec:
   providerConfigRef:
     name: {{ $awsProviderConfig }}
   deletionPolicy: {{ $deletionPolicy }}
   forProvider:
+    {{- if $clusterName }}
     clusterName: {{ $clusterName }}
+    {{- end }}
+    {{- if $clusterNameRef }}
+    clusterNameRef:
+      {{ toYaml $clusterNameRef | nindent 6 }}
+    {{- end }}
+    {{- if $clusterNameSelector }}
+    clusterNameSelector:
+      {{ toYaml $clusterNameSelector | nindent 6 }}
+    {{- end }}
     namespace: {{ $serviceAccountNamespace }}
     region: {{ $region }}
-    roleArn: {{ $roleArn }}
+    roleArnSelector:
+      matchControllerRef: true
+      matchLabels:
+        aws.hops.ops.com.ai/pod-identity: {{ $xrName }}
     serviceAccount: {{ $serviceAccountName }}
