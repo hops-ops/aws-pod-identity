@@ -1,0 +1,60 @@
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: PodIdentity
+metadata:
+  name: example
+  namespace: default
+spec:
+  clusterName: cluster-x
+  aws:
+    providerConfig: shared-aws-provider
+  managementPolicies:
+    - "*"
+  region: us-west-2
+  permissionsBoundaryArn: arn:aws:iam::123456789012:policy/eks-permissions-boundary
+  managedPolicyArns:
+    - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+  rolePrefix: podid-
+  roleNameOverride: loki-custom-role
+  inlinePolicy:
+    - name: loki-storage
+      policy: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "LokiStorage",
+                    "Effect": "Allow",
+                    "Action": [
+                        "s3:ListBucket",
+                        "s3:PutObject",
+                        "s3:GetObject",
+                        "s3:DeleteObject"
+                    ],
+                    "Resource": [
+                        "arn:aws:s3:::example-loki-chunks",
+                        "arn:aws:s3:::example-loki-chunks/*",
+                        "arn:aws:s3:::example-loki-ruler",
+                        "arn:aws:s3:::example-loki-ruler/*"
+                    ]
+                }
+            ]
+        }
+    - name: allow-read-secrets
+      policy: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "secretsmanager:GetSecretValue"
+                    ],
+                    "Resource": "arn:aws:secretsmanager:us-west-2:123456789012:secret:*"
+                }
+            ]
+        }
+  tags:
+    environment: demo
+  serviceAccount:
+    namespace: observability
+    name: loki

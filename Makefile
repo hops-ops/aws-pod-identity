@@ -10,7 +10,7 @@ render: render-example
 render-all: render-example
 
 render-example:
-	up composition render apis/xpodidentities/composition.yaml examples/xpodidentities/full-schema.yaml
+	up composition render apis/podidentities/composition.yaml examples/podidentities/full-schema.yaml
 
 test:
 	up test run tests/*
@@ -18,17 +18,17 @@ test:
 validate: validate-composition validate-example
 
 validate-composition:
-	up composition render apis/xpodidentities/composition.yaml examples/xpodidentities/full-schema.yaml --include-full-xr --quiet | crossplane beta validate apis/xpodidentities --error-on-missing-schemas -
+	up composition render apis/podidentities/composition.yaml examples/podidentities/full-schema.yaml --include-full-xr --quiet | crossplane beta validate apis/podidentities --error-on-missing-schemas -
 
 validate-example:
-	crossplane beta validate apis/xpodidentities examples/xpodidentities
+	crossplane beta validate apis/podidentities examples/podidentities
 
 publish:
 	@if [ -z "$(tag)" ]; then echo "Error: tag is not set. Usage: make publish tag=<version>"; exit 1; fi
 	up project build --push --tag $(tag)
 
 generate-definitions:
-	up xrd generate examples/xpodidentities/full-schema.yaml
+	up xrd generate examples/podidentities/full-schema.yaml
 
 generate-function:
-	up function generate --language=go-templating render apis/xpodidentities/composition.yaml
+	up function generate --language=go-templating render apis/podidentities/composition.yaml

@@ -1,0 +1,183 @@
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+  name: podidentities.aws.hops.ops.com.ai
+spec:
+  group: aws.hops.ops.com.ai
+  names:
+    categories:
+      - crossplane
+    kind: PodIdentity
+    plural: podidentities
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      referenceable: true
+      served: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          description: PodIdentity defines an AWS IAM role and EKS Pod Identity association.
+          properties:
+            spec:
+              type: object
+              description: PodIdentitySpec defines the desired state.
+              properties:
+                region:
+                  type: string
+                  description: AWS region hosting the EKS cluster.
+                clusterName:
+                  type: string
+                  description: Name of the cluster to bind the pod identity association to.
+                clusterNameRef:
+                  type: object
+                  description: Reference to a Cluster in eks to populate clusterName.
+                  properties:
+                    name:
+                      type: string
+                      description: Name of the referenced object.
+                    policy:
+                      type: object
+                      description: Policies for referencing.
+                      properties:
+                        resolution:
+                          type: string
+                          description: |
+                            Resolution specifies whether resolution of this reference is required.
+                            The default is 'Required', which means the reconcile will fail if the
+                            reference cannot be resolved. 'Optional' means this reference will be
+                            a no-op if it cannot be resolved.
+                          default: Required
+                          enum:
+                            - Required
+                            - Optional
+                        resolve:
+                          type: string
+                          description: |
+                            Resolve specifies when this reference should be resolved. The default
+                            is 'IfNotPresent', which will attempt to resolve the reference only when
+                            the corresponding field is not present. Use 'Always' to resolve the
+                            reference on every reconcile.
+                          enum:
+                            - Always
+                            - IfNotPresent
+                  required:
+                    - name
+                clusterNameSelector:
+                  type: object
+                  description: Selector for a Cluster in eks to populate clusterName.
+                  properties:
+                    matchControllerRef:
+                      type: boolean
+                      description: |
+                        MatchControllerRef ensures an object with the same controller reference
+                        as the selecting object is selected.
+                    matchLabels:
+                      type: object
+                      description: MatchLabels ensures an object with matching labels is selected.
+                      additionalProperties:
+                        type: string
+                    policy:
+                      type: object
+                      description: Policies for selection.
+                      properties:
+                        resolution:
+                          type: string
+                          description: |
+                            Resolution specifies whether resolution of this reference is required.
+                            The default is 'Required', which means the reconcile will fail if the
+                            reference cannot be resolved. 'Optional' means this reference will be
+                            a no-op if it cannot be resolved.
+                          default: Required
+                          enum:
+                            - Required
+                            - Optional
+                        resolve:
+                          type: string
+                          description: |
+                            Resolve specifies when this reference should be resolved. The default
+                            is 'IfNotPresent', which will attempt to resolve the reference only when
+                            the corresponding field is not present. Use 'Always' to resolve the
+                            reference on every reconcile.
+                          enum:
+                            - Always
+                            - IfNotPresent
+                aws:
+                  type: object
+                  description: AWS-specific configuration overrides.
+                  properties:
+                    providerConfig:
+                      type: string
+                      description: Crossplane ProviderConfig used for AWS resources. Defaults to the clusterName or "default" when unset.
+                managementPolicies:
+                  description: ManagementPolicies for AWS resources. Defaults to ["*"] which includes all operations (Create, Observe, Update, Delete, LateInitialize). To orphan resources on deletion, use ["Create", "Observe", "Update", "LateInitialize"].
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - "*"
+                      - Create
+                      - Observe
+                      - Update
+                      - Delete
+                      - LateInitialize
+                  default:
+                    - "*"
+                serviceAccount:
+                  type: object
+                  description: Target Kubernetes service account.
+                  properties:
+                    name:
+                      type: string
+                      description: Name of the Kubernetes service account.
+                    namespace:
+                      type: string
+                      description: Namespace containing the Kubernetes service account.
+                  required:
+                    - name
+                    - namespace
+                inlinePolicy:
+                  type: array
+                  description: Exclusive set of IAM inline policies to associate with the role.
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Friendly name for the inline policy document.
+                      policy:
+                        type: string
+                        description: Policy document formatted as a JSON string.
+                managedPolicyArns:
+                  type: array
+                  description: Exclusive set of managed policy ARNs to attach to the IAM role.
+                  items:
+                    type: string
+                  x-kubernetes-list-type: set
+                permissionsBoundaryArn:
+                  type: string
+                  description: ARN of the permissions boundary policy to apply to the IAM role.
+                rolePrefix:
+                  type: string
+                  description: Prefix appended to the generated IAM role name when overrides are not supplied.
+                roleNameOverride:
+                  type: string
+                  description: Explicit IAM role name override. When set, this value is used instead of the generated name or prefix.
+                tags:
+                  type: object
+                  description: Additional AWS tags to merge with the default hops tag.
+                  x-kubernetes-preserve-unknown-fields: true
+              required:
+                - region
+                - serviceAccount
+                - managementPolicies
+            status:
+              type: object
+              description: PodIdentityStatus defines the observed state.
+              properties:
+                podIdentity:
+                  type: object
+                  description: Freeform field containing status information for the pod identity association.
+                  x-kubernetes-preserve-unknown-fields: true
+          required:
+            - spec

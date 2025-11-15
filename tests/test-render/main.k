@@ -1,4 +1,5 @@
-import models.com.tech.unbounded.hops.v1alpha1 as hopsv1alpha1
+
+import models.ai.com.ops.hops.aws.v1alpha1 as awsv1alpha1
 import models.io.upbound.dev.meta.v1alpha1 as metav1alpha1
 import models.io.upbound.dev.meta.v2alpha1 as metav2alpha1
 import models.k8s.apimachinery.pkg.apis.meta.v1 as metav1
@@ -10,17 +11,18 @@ _items = [
         spec= {
             assertResources: [
                 {
-                    apiVersion: "iam.aws.upbound.io/v1beta1"
+                    apiVersion: "iam.aws.m.upbound.io/v1beta1"
                     kind: "Role"
                     metadata: {
-                        name: "example-pod-identity-role"
+                        name: "loki-custom-role"
                     }
                     spec: {
+                        managementPolicies: ["*"]
                         providerConfigRef: {
-                            name: "cluster-x"
+                            name: "shared-aws-provider"
                         }
                         forProvider: {
-                            name: "podid-cluster-x-loki"
+                            name: "loki-custom-role"
                             managedPolicyArns: [
                                 "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
                             ]
@@ -41,14 +43,15 @@ _items = [
                     }
                 },
                 {
-                    apiVersion: "eks.aws.upbound.io/v1beta1"
+                    apiVersion: "eks.aws.m.upbound.io/v1beta1"
                     kind: "PodIdentityAssociation"
                     metadata: {
-                        name: "example-pod-identity-pod-identity"
+                        name: "cluster-x-example"
                     }
                     spec: {
+                        managementPolicies: ["*"]
                         providerConfigRef: {
-                            name: "cluster-x"
+                            name: "shared-aws-provider"
                         }
                         forProvider: {
                             clusterName: "cluster-x"
@@ -57,7 +60,7 @@ _items = [
                             roleArnSelector: {
                                 matchControllerRef: True
                                 matchLabels: {
-                                    "aws.hops.ops.com.ai/pod-identity": "example-pod-identity"
+                                    "aws.hops.ops.com.ai/pod-identity": "example"
                                 }
                             }
                             serviceAccount: "loki"
@@ -65,9 +68,9 @@ _items = [
                     }
                 }
             ]
-            compositionPath: "apis/xpodidentities/composition.yaml"
-            xrPath: "examples/xpodidentities/full-schema.yaml"
-            xrdPath: "apis/xpodidentities/definition.yaml"
+            compositionPath: "apis/podidentities/composition.yaml"
+            xrPath: "examples/podidentities/full-schema.yaml"
+            xrdPath: "apis/podidentities/definition.yaml"
             timeoutSeconds: 120
             validate: True
         }
@@ -77,17 +80,18 @@ _items = [
         spec= {
             assertResources: [
                 {
-                    apiVersion: "iam.aws.upbound.io/v1beta1"
+                    apiVersion: "iam.aws.m.upbound.io/v1beta1"
                     kind: "Role"
                     metadata: {
-                        name: "example-pod-identity-role"
+                        name: "cluster-x-example"
                     }
                     spec: {
+                        managementPolicies: ["*"]
                         providerConfigRef: {
                             name: "cluster-x"
                         }
                         forProvider: {
-                            name: "cluster-x"
+                            name: "cluster-x-example"
                             inlinePolicy: [
                                 {
                                     name: "default"
@@ -100,12 +104,13 @@ _items = [
                     }
                 },
                 {
-                    apiVersion: "eks.aws.upbound.io/v1beta1"
+                    apiVersion: "eks.aws.m.upbound.io/v1beta1"
                     kind: "PodIdentityAssociation"
                     metadata: {
-                        name: "example-pod-identity-pod-identity"
+                        name: "cluster-x-example"
                     }
                     spec: {
+                        managementPolicies: ["*"]
                         providerConfigRef: {
                             name: "cluster-x"
                         }
@@ -116,7 +121,7 @@ _items = [
                             roleArnSelector: {
                                 matchControllerRef: True
                                 matchLabels: {
-                                    "aws.hops.ops.com.ai/pod-identity": "example-pod-identity"
+                                    "aws.hops.ops.com.ai/pod-identity": "example"
                                 }
                             }
                             serviceAccount: "loki"
@@ -124,9 +129,9 @@ _items = [
                     }
                 }
             ]
-            compositionPath: "apis/xpodidentities/composition.yaml"
-            xrPath: "examples/xpodidentities/example-minimal.yaml"
-            xrdPath: "apis/xpodidentities/definition.yaml"
+            compositionPath: "apis/podidentities/composition.yaml"
+            xrPath: "examples/podidentities/example-minimal.yaml"
+            xrdPath: "apis/podidentities/definition.yaml"
             timeoutSeconds: 120
             validate: True
         }

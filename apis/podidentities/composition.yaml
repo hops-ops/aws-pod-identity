@@ -1,11 +1,11 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: configuration-aws-pod-identity-v1alpha1-1
+  name: podidentities.aws.hops.ops.com.ai
 spec:
   compositeTypeRef:
     apiVersion: aws.hops.ops.com.ai/v1alpha1
-    kind: XPodIdentity
+    kind: PodIdentity
   mode: Pipeline
   pipeline:
     - functionRef:

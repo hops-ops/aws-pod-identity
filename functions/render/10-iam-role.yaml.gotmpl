@@ -3,20 +3,21 @@
 
 ---
 
-apiVersion: iam.aws.upbound.io/v1beta1
+apiVersion: iam.aws.m.upbound.io/v1beta1
 kind: Role
 metadata:
-  name: {{ $roleResourceName }}
+  name: {{ $roleName }}
   annotations:
     gotemplating.fn.crossplane.io/composition-resource-name: "pod-identity-role"
   labels:
-    aws.hops.ops.com.ai/pod-identity: {{ $xrName }}
+    aws.hops.ops.com.ai/pod-identity: {{ $name }}
 spec:
   providerConfigRef:
+    kind: ProviderConfig
     name: {{ $awsProviderConfig }}
-  deletionPolicy: {{ $deletionPolicy }}
+  managementPolicies: {{ toYaml $managementPolicies | nindent 4 }}
   forProvider:
-    name: {{ $iamRoleName }}
+    name: {{ $roleName }}
     assumeRolePolicy: |
       {
         "Version":"2012-10-17",

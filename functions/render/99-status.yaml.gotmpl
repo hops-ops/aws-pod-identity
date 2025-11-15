@@ -1,0 +1,28 @@
+# code: language=yaml
+
+{{- if $observed }}
+
+---
+
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: PodIdentity
+status:
+  podIdentity:
+    region: "{{ $region }}"
+    {{- if $clusterName }}
+    clusterName: "{{ $clusterName }}"
+    {{- end }}
+    serviceAccount:
+      namespace: "{{ $serviceAccountNamespace }}"
+      name: "{{ $serviceAccountName }}"
+    role:
+      name: "{{ $roleName }}"
+      arn: "{{ $observedRoleArn }}"
+      ready: {{ $roleReady }}
+    association:
+      name: "{{ $podIdentityAssociationName }}"
+      id: "{{ $observedAssociationId }}"
+      roleArn: "{{ $observedAssociationRoleArn | default $observedRoleArn }}"
+      ready: {{ $associationReady }}
+
+{{- end }}

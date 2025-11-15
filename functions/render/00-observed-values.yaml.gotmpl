@@ -1,0 +1,53 @@
+# code: language=yaml
+# yaml-language-server: $schema=../../.up/json/models/index.schema.json
+
+# Observed resources for projecting status
+{{ $observed := $.observed.resources | default (dict) }}
+{{ $roleObservation := get $observed "pod-identity-role" }}
+{{ $associationObservation := get $observed "pod-identity-association" }}
+
+{{ $roleReady := false }}
+{{ $associationReady := false }}
+{{ $observedRoleArn := "Pending" }}
+{{ $observedAssociationId := "" }}
+{{ $observedAssociationRoleArn := "" }}
+
+{{ with $roleObservation }}
+  {{ $resource := .resource | default (dict) }}
+  {{ $status := $resource.status | default (dict) }}
+  {{ $conditions := $status.conditions | default (list) }}
+  {{ range $conditions }}
+    {{ $type := default "" (get . "type") }}
+    {{ $conditionStatus := default "" (get . "status") }}
+    {{ if and (eq $type "Ready") (eq $conditionStatus "True") }}
+      {{ $roleReady = true }}
+    {{ end }}
+  {{ end }}
+  {{ $atProvider := $status.atProvider | default (dict) }}
+  {{ $roleArnCandidate := $atProvider.arn | default "" }}
+  {{ if $roleArnCandidate }}
+    {{ $observedRoleArn = $roleArnCandidate }}
+  {{ end }}
+{{ end }}
+
+{{ with $associationObservation }}
+  {{ $resource := .resource | default (dict) }}
+  {{ $status := $resource.status | default (dict) }}
+  {{ $conditions := $status.conditions | default (list) }}
+  {{ range $conditions }}
+    {{ $type := default "" (get . "type") }}
+    {{ $conditionStatus := default "" (get . "status") }}
+    {{ if and (eq $type "Ready") (eq $conditionStatus "True") }}
+      {{ $associationReady = true }}
+    {{ end }}
+  {{ end }}
+  {{ $atProvider := $status.atProvider | default (dict) }}
+  {{ $associationIdCandidate := $atProvider.id | default "" }}
+  {{ if $associationIdCandidate }}
+    {{ $observedAssociationId = $associationIdCandidate }}
+  {{ end }}
+  {{ $associationRoleArnCandidate := $atProvider.roleArn | default "" }}
+  {{ if $associationRoleArnCandidate }}
+    {{ $observedAssociationRoleArn = $associationRoleArnCandidate }}
+  {{ end }}
+{{ end }}

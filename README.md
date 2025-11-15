@@ -1,11 +1,12 @@
 # configuration-aws-pod-identity
 
-`configuration-aws-pod-identity` is a Crossplane configuration package that provisions IAM roles, policies, and Amazon EKS Pod Identity associations for Kubernetes service accounts. It publishes the `XPodIdentity` composite resource definition so platform teams can grant AWS permissions to workloads without hand-crafting IAM resources.
+`configuration-aws-pod-identity` is a Crossplane configuration package that provisions IAM roles, policies, and Amazon EKS Pod Identity associations for Kubernetes service accounts. It publishes the `PodIdentity` composite resource definition so platform teams can grant AWS permissions to workloads without hand-crafting IAM resources.
 
 ## Features
 
 - Creates IAM roles with the EKS Pod Identity trust policy.
 - Attaches inline IAM policies supplied by the caller and optional managed policy ARNs.
+- Supports IAM role naming conventions through `rolePrefix` or explicit `roleNameOverride` (with `roleName` kept for backwards compatibility).
 - Supports optional permissions boundaries and custom provider configs.
 - Creates `PodIdentityAssociation` resources that map IAM roles to Kubernetes service accounts.
 - Ships with automation for validation, testing, and package publishing.
@@ -38,41 +39,37 @@ spec:
 
 ```yaml
 apiVersion: aws.hops.ops.com.ai/v1alpha1
-kind: XPodIdentity
+kind: PodIdentity
 metadata:
-  name: example-pod-identity
+  name: configuration-aws-eks-pod-identity
+  namespace: example-env
 spec:
-  parameters:
-    clusterName: cluster-x
-    region: us-west-2
-    serviceAccount:
-      namespace: observability
-      name: loki
-    permissionsBoundaryArn: "arn:aws:iam::123456789012:policy/eks-permissions-boundary"
-    managedPolicyArns:
-      - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-    inlinePolicy:
-      - name: loki-storage
-        policy: |
-          {
-              "Version": "2012-10-17",
-              "Statement": [
-                  {
-                      "Effect": "Allow",
-                      "Action": [
-                          "s3:ListBucket",
-                          "s3:GetObject",
-                          "s3:PutObject"
-                      ],
-                      "Resource": [
-                          "arn:aws:s3:::example-loki-chunks",
-                          "arn:aws:s3:::example-loki-chunks/*"
-                      ]
-                  }
-              ]
-          }
-    tags:
-      workload: example
+  region: us-west-2
+  clusterName: my-cluster
+  managementPolicies:
+    - "*"
+  managedPolicyArns:
+    - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  rolePrefix: podid-
+  roleNameOverride: loki-custom-role
+  inlinePolicy:
+    - name: allow-kms-describe
+      policy: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "kms:DescribeKey"
+                    ],
+                    "Resource": "*"
+                }
+            ]
+        }
+  serviceAccount:
+    name: my-controller
+    namespace: kube-system
 ```
 
 ## Local Development
