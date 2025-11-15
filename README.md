@@ -1,6 +1,6 @@
-# configuration-aws-pod-identity
+# configuration-aws-eks-pod-identity
 
-`configuration-aws-pod-identity` is a Crossplane configuration package that provisions IAM roles, policies, and Amazon EKS Pod Identity associations for Kubernetes service accounts. It publishes the `PodIdentity` composite resource definition so platform teams can grant AWS permissions to workloads without hand-crafting IAM resources.
+`configuration-aws-eks-pod-identity` is a Crossplane configuration package that provisions IAM roles, policies, and Amazon EKS Pod Identity associations for Kubernetes service accounts. It publishes the `PodIdentity` composite resource definition so platform teams can grant AWS permissions to workloads without hand-crafting IAM resources.
 
 ## Features
 
@@ -27,9 +27,9 @@
 apiVersion: pkg.crossplane.io/v1
 kind: Configuration
 metadata:
-  name: configuration-aws-pod-identity
+  name: configuration-aws-eks-pod-identity
 spec:
-  package: ghcr.io/hops-ops/configuration-aws-pod-identity:latest
+  package: ghcr.io/hops-ops/configuration-aws-eks-pod-identity:latest
   packagePullSecrets:
     - name: ghcr
   skipDependencyResolution: true
@@ -38,7 +38,7 @@ spec:
 ## Example Composite
 
 ```yaml
-apiVersion: aws.hops.ops.com.ai/v1alpha1
+apiVersion: eks.aws.hops.ops.com.ai/v1alpha1
 kind: PodIdentity
 metadata:
   name: configuration-aws-eks-pod-identity

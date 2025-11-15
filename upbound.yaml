@@ -1,7 +1,7 @@
 apiVersion: meta.dev.upbound.io/v2alpha1
 kind: Project
 metadata:
-  name: configuration-aws-pod-identity
+  name: configuration-aws-eks-pod-identity
 spec:
   dependsOn:
   - apiVersion: pkg.crossplane.io/v1
@@ -20,8 +20,8 @@ spec:
   license: Apache-2.0
   maintainer: Patrick Lee Scott <pat@patscott.io>
   readme: |
-    # configuration-aws-pod-identity
+    # configuration-aws-eks-pod-identity
 
     Provisions IAM roles, policies, and Amazon EKS Pod Identity associations for Kubernetes service accounts.
-  repository: ghcr.io/hops-ops/configuration-aws-pod-identity
-  source: github.com/hops-ops/configuration-aws-pod-identity
+  repository: ghcr.io/hops-ops/configuration-aws-eks-pod-identity
+  source: github.com/hops-ops/configuration-aws-eks-pod-identity

@@ -10,7 +10,7 @@ metadata:
   annotations:
     gotemplating.fn.crossplane.io/composition-resource-name: "pod-identity-role"
   labels:
-    aws.hops.ops.com.ai/pod-identity: {{ $name }}
+    hops.ops.com.ai/pod-identity: {{ $name }}
 spec:
   providerConfigRef:
     kind: ProviderConfig

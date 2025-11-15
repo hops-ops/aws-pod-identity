@@ -1,15 +1,15 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: podidentities.aws.hops.ops.com.ai
+  name: podidentities.eks.aws.hops.ops.com.ai
 spec:
   compositeTypeRef:
-    apiVersion: aws.hops.ops.com.ai/v1alpha1
+    apiVersion: eks.aws.hops.ops.com.ai/v1alpha1
     kind: PodIdentity
   mode: Pipeline
   pipeline:
     - functionRef:
-        name: hops-ops-configuration-aws-pod-identityrender
+        name: hops-ops-configuration-aws-eks-pod-identityrender
       step: render
     - functionRef:
         name: crossplane-contrib-function-auto-ready

@@ -55,7 +55,7 @@ The composite accepts:
 - PodIdentityAssociation metadata names follow the same `<clusterName>-<metadata.name>` base, so avoid introducing suffixes like `-pod-identity`.
 - Resource metadata names should match the XR (or another meaningful identifier) without repeating the resource kind—no `-role`, `-policy`, etc.
 - Both IAM Role and PodIdentityAssociation set `providerConfigRef.kind: ProviderConfig`; keep that to match other configs.
-- Pod Identity associations resolve the IAM role using the shared `aws.hops.ops.com.ai/pod-identity` label—prefer labels over explicit ARNs to keep resources composable.
+- Pod Identity associations resolve the IAM role using the shared `hops.ops.com.ai/pod-identity` label—prefer labels over explicit ARNs to keep resources composable.
 
 ## Development Workflow
 

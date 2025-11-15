@@ -60,7 +60,7 @@ _items = [
                             roleArnSelector: {
                                 matchControllerRef: True
                                 matchLabels: {
-                                    "aws.hops.ops.com.ai/pod-identity": "example"
+                                    "hops.ops.com.ai/pod-identity": "example"
                                 }
                             }
                             serviceAccount: "loki"
@@ -121,7 +121,7 @@ _items = [
                             roleArnSelector: {
                                 matchControllerRef: True
                                 matchLabels: {
-                                    "aws.hops.ops.com.ai/pod-identity": "example"
+                                    "hops.ops.com.ai/pod-identity": "example"
                                 }
                             }
                             serviceAccount: "loki"

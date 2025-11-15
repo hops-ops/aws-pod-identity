@@ -1,9 +1,9 @@
 apiVersion: apiextensions.crossplane.io/v2
 kind: CompositeResourceDefinition
 metadata:
-  name: podidentities.aws.hops.ops.com.ai
+  name: podidentities.eks.aws.hops.ops.com.ai
 spec:
-  group: aws.hops.ops.com.ai
+  group: eks.aws.hops.ops.com.ai
   names:
     categories:
       - crossplane

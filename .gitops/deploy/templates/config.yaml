@@ -1,9 +1,9 @@
 apiVersion: pkg.crossplane.io/v1
 kind: Configuration
 metadata:
-  name: configuration-aws-pod-identity
+  name: configuration-aws-eks-pod-identity
 spec:
-  package: ghcr.io/hops-ops/configuration-aws-pod-identity:{{ .Values.version }}
+  package: ghcr.io/hops-ops/configuration-aws-eks-pod-identity:{{ .Values.version }}
   packagePullSecrets:
     - name: ghcr
   skipDependencyResolution: {{ .Values.skipDependencyResolution }}
@@ -14,9 +14,9 @@ spec:
 apiVersion: pkg.crossplane.io/v1
 kind: Function
 metadata:
-  name: hops-ops-configuration-aws-pod-identityrender
+  name: hops-ops-configuration-aws-eks-pod-identityrender
 spec:
-  package: ghcr.io/hops-ops/configuration-aws-pod-identity_render:{{ .Values.version }}
+  package: ghcr.io/hops-ops/configuration-aws-eks-pod-identity_render:{{ .Values.version }}
   packagePullSecrets:
     - name: ghcr
   skipDependencyResolution: {{ .Values.skipDependencyResolution }}
