@@ -35,3 +35,26 @@ spec:
       matchLabels:
         hops.ops.com.ai/pod-identity: {{ $name }}
     serviceAccount: {{ $serviceAccountName }}
+
+# Usage: Role protected by PodIdentityAssociation
+{{- if and $roleReady $associationReady }}
+---
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ printf "of-role-%s-by-association-%s" $roleName $podIdentityAssociationName }}
+  annotations:
+    gotemplating.fn.crossplane.io/composition-resource-name: "pod-identity-role-used-by-association"
+spec:
+  replayDeletion: true
+  of:
+    apiVersion: iam.aws.m.upbound.io/v1beta1
+    kind: Role
+    resourceRef:
+      name: {{ $roleName }}
+  by:
+    apiVersion: eks.aws.m.upbound.io/v1beta1
+    kind: PodIdentityAssociation
+    resourceRef:
+      name: {{ $podIdentityAssociationName }}
+{{- end }}

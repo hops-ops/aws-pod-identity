@@ -17,7 +17,6 @@ spec:
     name: {{ $awsProviderConfig }}
   managementPolicies: {{ toYaml $managementPolicies | nindent 4 }}
   forProvider:
-    name: {{ $roleName }}
     assumeRolePolicy: |
       {
         "Version":"2012-10-17",
