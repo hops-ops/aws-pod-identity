@@ -36,7 +36,8 @@ _items = [
                             ]
                             tags: {
                                 environment: "demo"
-                                hops: "true"
+                                "hops.ops.com.ai/managed": "true"
+                                "hops.ops.com.ai/podidentity": "example"
                             }
                         }
                     }
@@ -96,7 +97,8 @@ _items = [
                                 }
                             ]
                             tags: {
-                                hops: "true"
+                                "hops.ops.com.ai/managed": "true"
+                                "hops.ops.com.ai/podidentity": "example"
                             }
                         }
                     }

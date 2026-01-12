@@ -28,7 +28,7 @@ spec:
                   description: AWS region hosting the EKS cluster.
                 labels:
                   type: object
-                  description: Custom labels applied to all managed resources. Merged with default labels (hops.ops.com.ai/managed, hops.ops.com.ai/podidentity).
+                  description: Custom labels applied to all Kubernetes resources. Merged with default labels (hops.ops.com.ai/managed, hops.ops.com.ai/podidentity).
                   additionalProperties:
                     type: string
                   x-kubernetes-preserve-unknown-fields: true
@@ -189,7 +189,9 @@ spec:
                       description: External name of existing Pod Identity Association to import. Leave empty to create new. Format is the association ID.
                 tags:
                   type: object
-                  description: Additional AWS tags to merge with the default hops tag.
+                  description: Custom tags applied to all AWS resources. Merged with default tags (hops.ops.com.ai/managed, hops.ops.com.ai/podidentity).
+                  additionalProperties:
+                    type: string
                   x-kubernetes-preserve-unknown-fields: true
               required:
                 - region
