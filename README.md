@@ -1,27 +1,16 @@
-# configuration-aws-eks-pod-identity
+# AWS EKS Pod Identity
 
-`configuration-aws-eks-pod-identity` is a Crossplane configuration package that provisions IAM roles, policies, and Amazon EKS Pod Identity associations for Kubernetes service accounts. It publishes the `PodIdentity` composite resource definition so platform teams can grant AWS permissions to workloads without hand-crafting IAM resources.
+A Crossplane configuration that provisions IAM roles and EKS Pod Identity associations for Kubernetes service accounts. Grant AWS permissions to workloads without hand-crafting IAM resources.
 
-## Features
+## Getting Started
 
-- Creates IAM roles with the EKS Pod Identity trust policy.
-- Attaches inline IAM policies supplied by the caller and optional managed policy ARNs.
-- Supports IAM role naming conventions through `rolePrefix` or explicit `roleNameOverride` (with `roleName` kept for backwards compatibility).
-- Supports optional permissions boundaries and custom provider configs.
-- Creates `PodIdentityAssociation` resources that map IAM roles to Kubernetes service accounts.
-- Ships with automation for validation, testing, and package publishing.
+### Prerequisites
 
-## Prerequisites
+- Amazon EKS cluster with Pod Identity agent installed
+- Crossplane installed in your cluster
+- Required providers: `provider-aws-iam` (≥ v2.1.1), `provider-aws-eks` (≥ v2.1.1)
 
-- An Amazon EKS cluster running in the target AWS account.
-- Crossplane installed in the cluster.
-- Crossplane providers:
-  - `provider-aws-iam` (≥ v2.1.1)
-  - `provider-aws-eks` (≥ v2.1.1)
-- Crossplane function:
-  - `function-auto-ready` (≥ v0.5.1)
-
-## Installing the Package
+### Installation
 
 ```yaml
 apiVersion: pkg.crossplane.io/v1
@@ -32,55 +21,208 @@ spec:
   package: ghcr.io/hops-ops/configuration-aws-eks-pod-identity:latest
   packagePullSecrets:
     - name: ghcr
-  skipDependencyResolution: true
 ```
 
-## Example Composite
+### Minimal Example
+
+Create a Pod Identity for a service account with basic S3 read access:
 
 ```yaml
-apiVersion: eks.aws.hops.ops.com.ai/v1alpha1
+apiVersion: aws.hops.ops.com.ai/v1alpha1
 kind: PodIdentity
 metadata:
-  name: configuration-aws-eks-pod-identity
-  namespace: example-env
+  name: my-app
+  namespace: my-namespace
 spec:
-  region: us-west-2
   clusterName: my-cluster
-  managementPolicies:
-    - "*"
-  managedPolicyArns:
-    - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  rolePrefix: podid-
-  roleNameOverride: loki-custom-role
+  region: us-west-2
+  serviceAccount:
+    name: my-app
+    namespace: my-namespace
   inlinePolicy:
-    - name: allow-kms-describe
+    - name: s3-read
       policy: |
         {
             "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Action": [
-                        "kms:DescribeKey"
-                    ],
-                    "Resource": "*"
-                }
-            ]
+            "Statement": [{
+                "Effect": "Allow",
+                "Action": ["s3:GetObject"],
+                "Resource": ["arn:aws:s3:::my-bucket/*"]
+            }]
         }
-  serviceAccount:
-    name: my-controller
-    namespace: kube-system
 ```
 
-## Local Development
+This creates:
+- An IAM role with EKS Pod Identity trust policy
+- A Pod Identity Association linking the role to your service account
 
-- `make render` – render the default example.
-- `make validate` – run Crossplane schema validation.
-- `make test` – execute `up test` regression tests.
-- `make publish tag=<version>` – build and push the configuration package.
+## Growing
 
-Before publishing, ensure CI workflows in `.github/` remain in sync with `.gitops/` automation.
+### Adding Managed Policies
+
+Attach AWS managed policies alongside inline policies:
+
+```yaml
+spec:
+  managedPolicyArns:
+    - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+    - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+```
+
+### Custom Role Naming
+
+Control the IAM role name:
+
+```yaml
+spec:
+  rolePrefix: podid-        # Prepends to auto-generated name
+  roleNameOverride: my-role # Or specify exact name
+```
+
+### Permissions Boundaries
+
+Enforce security boundaries on the IAM role:
+
+```yaml
+spec:
+  permissionsBoundaryArn: arn:aws:iam::123456789012:policy/eks-permissions-boundary
+```
+
+### Custom Labels
+
+Add labels to all managed resources for tracking and organization:
+
+```yaml
+spec:
+  labels:
+    team: platform
+    app: loki
+    cost-center: engineering
+```
+
+Default labels are automatically applied:
+- `hops.ops.com.ai/managed: "true"`
+- `hops.ops.com.ai/podidentity: <name>`
+
+### Custom Provider Configuration
+
+Use a specific AWS provider config:
+
+```yaml
+spec:
+  providerConfigRef:
+    name: shared-aws-provider
+```
+
+## Enterprise Scale
+
+### Multiple Environments
+
+Use namespace isolation with provider configs per environment:
+
+```yaml
+# Production
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: PodIdentity
+metadata:
+  name: my-app
+  namespace: production
+spec:
+  clusterName: prod-cluster
+  providerConfigRef:
+    name: aws-prod
+  labels:
+    environment: production
+  ...
+
+# Staging
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: PodIdentity
+metadata:
+  name: my-app
+  namespace: staging
+spec:
+  clusterName: staging-cluster
+  providerConfigRef:
+    name: aws-staging
+  labels:
+    environment: staging
+  ...
+```
+
+### Orphan Protection
+
+Prevent accidental AWS resource deletion by removing Delete from management policies:
+
+```yaml
+spec:
+  managementPolicies:
+    - Create
+    - Observe
+    - Update
+    - LateInitialize
+```
+
+With this configuration, deleting the PodIdentity claim will NOT delete the underlying AWS resources.
+
+## Import Existing
+
+Adopt pre-existing IAM roles and Pod Identity associations into Crossplane management.
+
+### Import Pattern
+
+```yaml
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: PodIdentity
+metadata:
+  name: imported-workload
+  namespace: default
+spec:
+  clusterName: my-cluster
+  region: us-west-2
+  # Orphan policy - resources persist after claim deletion
+  managementPolicies:
+    - Create
+    - Observe
+    - Update
+    - LateInitialize
+  serviceAccount:
+    namespace: monitoring
+    name: prometheus
+  # Import existing IAM role by name
+  role:
+    externalName: my-existing-role
+  # Import existing association by ID
+  association:
+    externalName: a-0123456789abcdef0
+  inlinePolicy:
+    - name: monitoring
+      policy: |
+        ...
+```
+
+### Getting External Names
+
+After initial creation (or to find existing resources):
+
+```bash
+# IAM Role external name (the role name)
+kubectl get role <name> -o jsonpath='{.metadata.annotations.crossplane\.io/external-name}'
+
+# Pod Identity Association ID
+kubectl get podidentityassociation <name> -o jsonpath='{.status.atProvider.id}'
+```
+
+## Development
+
+```bash
+make render:all   # Render all examples
+make validate:all # Validate against schemas
+make test         # Run unit tests
+make e2e          # Run E2E tests
+make publish tag=v1.0.0  # Build and push package
+```
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE) for details.
+Apache-2.0

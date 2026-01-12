@@ -1,0 +1,64 @@
+# code: language=yaml
+#
+# Pod Identity Association
+# Depends on: 005-state-podidentity ($state.podIdentity)
+#
+---
+apiVersion: eks.aws.m.upbound.io/v1beta1
+kind: PodIdentityAssociation
+metadata:
+  name: {{ $state.podIdentity.association.name }}
+  annotations:
+    {{ setResourceNameAnnotation "pod-identity-association" }}
+    {{- if $state.podIdentity.association.externalName }}
+    crossplane.io/external-name: {{ $state.podIdentity.association.externalName }}
+    {{- end }}
+  labels: {{ $state.podIdentity.labels | toJson }}
+spec:
+  providerConfigRef:
+    name: {{ $state.podIdentity.providerConfig.name }}
+    kind: {{ $state.podIdentity.providerConfig.kind }}
+  managementPolicies: {{ $state.podIdentity.managementPolicies | toJson }}
+  forProvider:
+    {{- if $state.podIdentity.clusterName }}
+    clusterName: {{ $state.podIdentity.clusterName }}
+    {{- end }}
+    {{- if $state.podIdentity.clusterNameRef }}
+    clusterNameRef: {{ $state.podIdentity.clusterNameRef | toJson }}
+    {{- end }}
+    {{- if $state.podIdentity.clusterNameSelector }}
+    clusterNameSelector: {{ $state.podIdentity.clusterNameSelector | toJson }}
+    {{- end }}
+    namespace: {{ $state.podIdentity.serviceAccount.namespace }}
+    region: {{ $state.podIdentity.region }}
+    roleArnSelector:
+      matchControllerRef: true
+      matchLabels:
+        hops.ops.com.ai/podidentity: {{ $state.podIdentity.name }}
+    serviceAccount: {{ $state.podIdentity.serviceAccount.name }}
+
+# ==============================================================================
+# Usage: Role protected by PodIdentityAssociation
+# ==============================================================================
+{{- if and $state.observed.role.ready $state.observed.association.ready }}
+---
+apiVersion: protection.crossplane.io/v1beta1
+kind: Usage
+metadata:
+  name: {{ $state.podIdentity.name }}-delete-association-before-role
+  annotations:
+    {{ setResourceNameAnnotation "usage-delete-association-before-role" }}
+spec:
+  replayDeletion: true
+  of:
+    apiVersion: iam.aws.m.upbound.io/v1beta1
+    kind: Role
+    resourceRef:
+      name: {{ $state.podIdentity.role.name }}
+  by:
+    apiVersion: eks.aws.m.upbound.io/v1beta1
+    kind: PodIdentityAssociation
+    resourceRef:
+      name: {{ $state.podIdentity.association.name }}
+{{- end }}
+

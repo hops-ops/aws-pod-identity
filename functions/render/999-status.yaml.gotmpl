@@ -1,0 +1,31 @@
+# code: language=yaml
+#
+# Output $state.status to the XR
+# Depends on: 010-state-status ($state.status computed)
+#
+
+{{- $xr := getCompositeResource . }}
+{{- $s := $state.status }}
+
+---
+apiVersion: {{ $xr.apiVersion }}
+kind: {{ $xr.kind }}
+status:
+  podIdentity:
+    region: {{ $s.region | quote }}
+    {{- if $s.clusterName }}
+    clusterName: {{ $s.clusterName | quote }}
+    {{- end }}
+    serviceAccount:
+      namespace: {{ $s.serviceAccount.namespace | quote }}
+      name: {{ $s.serviceAccount.name | quote }}
+    role:
+      name: {{ $s.role.name | quote }}
+      arn: {{ $s.role.arn | quote }}
+      ready: {{ $s.role.ready }}
+    association:
+      name: {{ $s.association.name | quote }}
+      id: {{ $s.association.id | quote }}
+      roleArn: {{ $s.association.roleArn | quote }}
+      ready: {{ $s.association.ready }}
+

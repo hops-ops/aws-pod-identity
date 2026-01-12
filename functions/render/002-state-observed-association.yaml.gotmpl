@@ -1,0 +1,27 @@
+# code: language=yaml
+#
+# Set $state.observed.association from pod-identity-association resource
+# Depends on: 000-state-init ($state initialized)
+#
+
+{{- $raw := $.observed.resources | default dict }}
+{{- $entry := get $raw "pod-identity-association" | default dict }}
+{{- $resource := $entry.resource | default dict }}
+{{- $status := $resource.status | default dict }}
+{{- $atProvider := $status.atProvider | default dict }}
+
+# Check readiness
+{{- $ready := false }}
+{{- range ($status.conditions | default list) }}
+  {{- if and (eq .type "Ready") (eq .status "True") }}
+    {{- $ready = true }}
+  {{- end }}
+{{- end }}
+
+# Set observed.association slice
+{{- $state = set $state "observed" (merge $state.observed (dict "association" (dict
+  "ready" $ready
+  "id" ($atProvider.id | default "")
+  "roleArn" ($atProvider.roleArn | default "")
+))) }}
+

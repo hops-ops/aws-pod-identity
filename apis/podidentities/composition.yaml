@@ -1,10 +1,10 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: podidentities.eks.aws.hops.ops.com.ai
+  name: podidentities.aws.hops.ops.com.ai
 spec:
   compositeTypeRef:
-    apiVersion: eks.aws.hops.ops.com.ai/v1alpha1
+    apiVersion: aws.hops.ops.com.ai/v1alpha1
     kind: PodIdentity
   mode: Pipeline
   pipeline:

@@ -1,0 +1,105 @@
+# code: language=yaml
+#
+# Initialize $state namespace with spec.raw and spec.effective
+# This is the first file in the pipeline - initializes $state which subsequent files extend
+#
+
+{{- $xr := getCompositeResource . }}
+{{- $metadata := $xr.metadata | default dict }}
+{{- $spec := $xr.spec | default dict }}
+
+# ==============================================================================
+# Build spec.effective with all defaults applied
+# ==============================================================================
+
+# Core identification
+{{- $name := $metadata.name | default "" }}
+{{- $clusterName := $spec.clusterName | default "" }}
+{{- $region := $spec.region | default "" }}
+{{- $managementPolicies := $spec.managementPolicies | default (list "*") }}
+
+# Provider configuration
+{{- $specProviderConfigRef := $spec.providerConfigRef | default dict }}
+{{- $providerConfigName := $specProviderConfigRef.name | default $clusterName | default "default" }}
+{{- $providerConfigKind := $specProviderConfigRef.kind | default "ProviderConfig" }}
+{{- $providerConfigRef := dict
+  "name" $providerConfigName
+  "kind" $providerConfigKind
+}}
+
+# Default labels: managed=true + <kind>=<name>
+{{- $defaultLabels := dict
+  "hops.ops.com.ai/managed" "true"
+  (printf "hops.ops.com.ai/%s" (lower $xr.kind)) $name
+}}
+{{- $labels := merge $defaultLabels ($spec.labels | default dict) }}
+
+# Tags with defaults
+{{- $defaultTags := dict "hops" "true" }}
+{{- $tags := merge $defaultTags ($spec.tags | default dict) }}
+
+# Service account (required via schema)
+{{- $serviceAccount := $spec.serviceAccount | default dict }}
+
+# Cluster name references
+{{- $clusterNameRef := $spec.clusterNameRef }}
+{{- $clusterNameSelector := $spec.clusterNameSelector }}
+
+# Role naming
+{{- $rolePrefix := $spec.rolePrefix | default "" }}
+{{- $roleNameOverride := $spec.roleNameOverride | default "" }}
+{{- $baseName := join "-" (compact (list $clusterName $name)) }}
+{{- $roleNameDefault := printf "%s%s" $rolePrefix $baseName }}
+{{- $roleName := $roleNameOverride | default $roleNameDefault }}
+{{- $podIdentityAssociationName := $baseName }}
+
+# Policies
+{{- $inlinePolicies := $spec.inlinePolicy | default list }}
+{{- $managedPolicyArns := $spec.managedPolicyArns | default list }}
+{{- $permissionsBoundaryArn := $spec.permissionsBoundaryArn | default "" }}
+
+# External names for import
+{{- $roleSpec := $spec.role | default dict }}
+{{- $associationSpec := $spec.association | default dict }}
+{{- $roleExternalName := $roleSpec.externalName | default "" }}
+{{- $associationExternalName := $associationSpec.externalName | default "" }}
+
+# ==============================================================================
+# Initialize $state namespace
+# ==============================================================================
+{{- $state := dict
+  "spec" (dict
+    "raw" $spec
+    "effective" (dict
+      "name" $name
+      "clusterName" $clusterName
+      "region" $region
+      "managementPolicies" $managementPolicies
+      "providerConfigRef" $providerConfigRef
+      "labels" $labels
+      "tags" $tags
+      "serviceAccount" (dict
+        "name" ($serviceAccount.name | default "")
+        "namespace" ($serviceAccount.namespace | default "")
+      )
+      "clusterNameRef" $clusterNameRef
+      "clusterNameSelector" $clusterNameSelector
+      "role" (dict
+        "name" $roleName
+        "prefix" $rolePrefix
+        "nameOverride" $roleNameOverride
+        "externalName" $roleExternalName
+        "inlinePolicies" $inlinePolicies
+        "managedPolicyArns" $managedPolicyArns
+        "permissionsBoundaryArn" $permissionsBoundaryArn
+      )
+      "association" (dict
+        "name" $podIdentityAssociationName
+        "externalName" $associationExternalName
+      )
+    )
+  )
+  "observed" (dict)
+  "podIdentity" (dict)
+}}
+

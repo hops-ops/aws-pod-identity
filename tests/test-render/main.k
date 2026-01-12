@@ -22,7 +22,6 @@ _items = [
                             name: "shared-aws-provider"
                         }
                         forProvider: {
-                            name: "loki-custom-role"
                             managedPolicyArns: [
                                 "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
                             ]
@@ -60,7 +59,7 @@ _items = [
                             roleArnSelector: {
                                 matchControllerRef: True
                                 matchLabels: {
-                                    "hops.ops.com.ai/pod-identity": "example"
+                                    "hops.ops.com.ai/podidentity": "example"
                                 }
                             }
                             serviceAccount: "loki"
@@ -91,7 +90,6 @@ _items = [
                             name: "cluster-x"
                         }
                         forProvider: {
-                            name: "cluster-x-example"
                             inlinePolicy: [
                                 {
                                     name: "default"
@@ -121,7 +119,7 @@ _items = [
                             roleArnSelector: {
                                 matchControllerRef: True
                                 matchLabels: {
-                                    "hops.ops.com.ai/pod-identity": "example"
+                                    "hops.ops.com.ai/podidentity": "example"
                                 }
                             }
                             serviceAccount: "loki"

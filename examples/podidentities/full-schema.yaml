@@ -1,15 +1,18 @@
-apiVersion: eks.aws.hops.ops.com.ai/v1alpha1
+apiVersion: aws.hops.ops.com.ai/v1alpha1
 kind: PodIdentity
 metadata:
   name: example
   namespace: default
 spec:
   clusterName: cluster-x
-  aws:
-    providerConfig: shared-aws-provider
+  providerConfigRef:
+    name: shared-aws-provider
   managementPolicies:
     - "*"
   region: us-west-2
+  labels:
+    team: platform
+    app: loki
   permissionsBoundaryArn: arn:aws:iam::123456789012:policy/eks-permissions-boundary
   managedPolicyArns:
     - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy

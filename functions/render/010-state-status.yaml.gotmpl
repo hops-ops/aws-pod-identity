@@ -1,0 +1,38 @@
+# code: language=yaml
+#
+# Compute $state.status from observed state
+# Depends on: 001-002 ($state.observed.role, $state.observed.association)
+#
+
+{{- $eff := $state.spec.effective }}
+{{- $obs := $state.observed }}
+
+# Overall readiness
+{{- $ready := and ($obs.role.ready | default false) ($obs.association.ready | default false) }}
+
+# Compute status values
+{{- $state = set $state "status" (dict
+  "ready" $ready
+  "region" $eff.region
+  "clusterName" $eff.clusterName
+  "serviceAccount" (dict
+    "namespace" $eff.serviceAccount.namespace
+    "name" $eff.serviceAccount.name
+  )
+  "role" (dict
+    "name" $eff.role.name
+    "arn" ($obs.role.arn | default "Pending")
+    "ready" ($obs.role.ready | default false)
+  )
+  "association" (dict
+    "name" $eff.association.name
+    "id" ($obs.association.id | default "")
+    "roleArn" (($obs.association.roleArn | default "") | default ($obs.role.arn | default "Pending"))
+    "ready" ($obs.association.ready | default false)
+  )
+  "spec" (dict
+    "raw" $state.spec.raw
+    "effective" $eff
+  )
+) }}
+

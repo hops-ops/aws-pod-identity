@@ -1,0 +1,28 @@
+# code: language=yaml
+#
+# Set $state.observed.role from pod-identity-role resource
+# Depends on: 000-state-init ($state initialized)
+#
+
+{{- $raw := $.observed.resources | default dict }}
+{{- $entry := get $raw "pod-identity-role" | default dict }}
+{{- $resource := $entry.resource | default dict }}
+{{- $status := $resource.status | default dict }}
+{{- $atProvider := $status.atProvider | default dict }}
+
+# Check readiness
+{{- $ready := false }}
+{{- range ($status.conditions | default list) }}
+  {{- if and (eq .type "Ready") (eq .status "True") }}
+    {{- $ready = true }}
+  {{- end }}
+{{- end }}
+
+# Set observed.role slice
+# Note: atProvider.id is the role name for IAM Role resources
+{{- $state = set $state "observed" (merge $state.observed (dict "role" (dict
+  "ready" $ready
+  "arn" ($atProvider.arn | default "")
+  "id" ($atProvider.id | default "")
+))) }}
+

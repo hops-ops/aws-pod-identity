@@ -1,0 +1,22 @@
+# Step 1: IAM Role becomes Ready
+apiVersion: iam.aws.m.upbound.io/v1beta1
+kind: Role
+metadata:
+  name: loki-custom-role
+  annotations:
+    crossplane.io/composition-resource-name: pod-identity-role
+    gotemplating.fn.crossplane.io/composition-resource-name: pod-identity-role
+  labels:
+    hops.ops.com.ai/managed: "true"
+    hops.ops.com.ai/podidentity: example
+    team: platform
+    app: loki
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+    - type: Synced
+      status: "True"
+  atProvider:
+    arn: "arn:aws:iam::123456789012:role/loki-custom-role"
+    id: "loki-custom-role"

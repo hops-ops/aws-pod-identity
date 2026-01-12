@@ -1,0 +1,47 @@
+# code: language=yaml
+#
+# Set $state.podIdentity computed state for rendering
+# Depends on: 000-004 ($state.spec.effective, $state.observed)
+#
+
+{{- $eff := $state.spec.effective }}
+
+# ==============================================================================
+# Core state shared by all resources
+# ==============================================================================
+{{- $podIdentity := dict
+  "name" $eff.name
+  "clusterName" $eff.clusterName
+  "region" $eff.region
+  "providerConfig" $eff.providerConfigRef
+  "managementPolicies" $eff.managementPolicies
+  "labels" $eff.labels
+  "tags" $eff.tags
+  "serviceAccount" $eff.serviceAccount
+  "clusterNameRef" $eff.clusterNameRef
+  "clusterNameSelector" $eff.clusterNameSelector
+}}
+
+# ==============================================================================
+# Role slice
+# ==============================================================================
+{{- $role := dict
+  "name" $eff.role.name
+  "externalName" $eff.role.externalName
+  "inlinePolicies" $eff.role.inlinePolicies
+  "managedPolicyArns" $eff.role.managedPolicyArns
+  "permissionsBoundaryArn" $eff.role.permissionsBoundaryArn
+}}
+{{- $podIdentity = set $podIdentity "role" $role }}
+
+# ==============================================================================
+# Association slice
+# ==============================================================================
+{{- $association := dict
+  "name" $eff.association.name
+  "externalName" $eff.association.externalName
+}}
+{{- $podIdentity = set $podIdentity "association" $association }}
+
+{{- $state = set $state "podIdentity" $podIdentity }}
+

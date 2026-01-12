@@ -1,9 +1,9 @@
 apiVersion: apiextensions.crossplane.io/v2
 kind: CompositeResourceDefinition
 metadata:
-  name: podidentities.eks.aws.hops.ops.com.ai
+  name: podidentities.aws.hops.ops.com.ai
 spec:
-  group: eks.aws.hops.ops.com.ai
+  group: aws.hops.ops.com.ai
   names:
     categories:
       - crossplane
@@ -26,6 +26,12 @@ spec:
                 region:
                   type: string
                   description: AWS region hosting the EKS cluster.
+                labels:
+                  type: object
+                  description: Custom labels applied to all managed resources. Merged with default labels (hops.ops.com.ai/managed, hops.ops.com.ai/podidentity).
+                  additionalProperties:
+                    type: string
+                  x-kubernetes-preserve-unknown-fields: true
                 clusterName:
                   type: string
                   description: Name of the cluster to bind the pod identity association to.
@@ -102,13 +108,17 @@ spec:
                           enum:
                             - Always
                             - IfNotPresent
-                aws:
+                providerConfigRef:
                   type: object
-                  description: AWS-specific configuration overrides.
+                  description: Reference to the ProviderConfig for AWS resources. Defaults to clusterName or "default" when unset.
                   properties:
-                    providerConfig:
+                    name:
                       type: string
-                      description: Crossplane ProviderConfig used for AWS resources. Defaults to the clusterName or "default" when unset.
+                      description: Name of the ProviderConfig.
+                    kind:
+                      type: string
+                      description: Kind of the ProviderConfig. Defaults to ProviderConfig.
+                      default: ProviderConfig
                 managementPolicies:
                   description: ManagementPolicies for AWS resources. Defaults to ["*"] which includes all operations (Create, Observe, Update, Delete, LateInitialize). To orphan resources on deletion, use ["Create", "Observe", "Update", "LateInitialize"].
                   type: array
@@ -159,10 +169,24 @@ spec:
                   description: ARN of the permissions boundary policy to apply to the IAM role.
                 rolePrefix:
                   type: string
-                  description: Prefix appended to the generated IAM role name when overrides are not supplied.
+                  description: Prefix prepended to the generated IAM role name when roleNameOverride is not set.
                 roleNameOverride:
                   type: string
                   description: Explicit IAM role name override. When set, this value is used instead of the generated name or prefix.
+                role:
+                  type: object
+                  description: IAM role configuration for import scenarios.
+                  properties:
+                    externalName:
+                      type: string
+                      description: External name of existing IAM role to import. Leave empty to create new. The external name is the role name (not ARN).
+                association:
+                  type: object
+                  description: Pod Identity Association configuration for import scenarios.
+                  properties:
+                    externalName:
+                      type: string
+                      description: External name of existing Pod Identity Association to import. Leave empty to create new. Format is the association ID.
                 tags:
                   type: object
                   description: Additional AWS tags to merge with the default hops tag.

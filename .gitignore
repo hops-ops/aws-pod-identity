@@ -1,4 +1,13 @@
-_output
-.venv
-.up
-.tmp
+# Build output
+_output/
+.up/
+
+# Virtual environments
+.venv/
+
+# Temporary files
+.tmp/
+
+# E2E test credentials (CRITICAL - never commit secrets)
+**/aws-creds
+tests/**/secrets/

@@ -12,7 +12,11 @@ E2E_TESTS := $(wildcard tests/e2etest-*)
 # Format: example_path::observed_resources_path (observed_resources_path is optional)
 EXAMPLES := \
 	examples/podidentities/example-minimal.yaml:: \
-	examples/podidentities/full-schema.yaml::
+	examples/podidentities/example-minimal.yaml::examples/test/mocks/observed-resources/minimal/steps/1/ \
+	examples/podidentities/example-minimal.yaml::examples/test/mocks/observed-resources/minimal/steps/2/ \
+	examples/podidentities/full-schema.yaml:: \
+	examples/podidentities/full-schema.yaml::examples/test/mocks/observed-resources/full/steps/1/ \
+	examples/podidentities/full-schema.yaml::examples/test/mocks/observed-resources/full/steps/2/
 
 clean:
 	rm -rf _output

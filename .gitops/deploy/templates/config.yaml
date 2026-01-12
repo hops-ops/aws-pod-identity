@@ -8,9 +8,10 @@ spec:
     - name: ghcr
   skipDependencyResolution: {{ .Values.skipDependencyResolution }}
 
+{{- if .Values.skipDependencyResolution }}
 ---
-
-# skipDependencyResolution false would rename this function; keep explicit name to match package path.
+# Only rendered when skipDependencyResolution=true (platform/advanced use case)
+# When false, Crossplane automatically resolves and installs embedded functions
 apiVersion: pkg.crossplane.io/v1
 kind: Function
 metadata:
@@ -20,3 +21,4 @@ spec:
   packagePullSecrets:
     - name: ghcr
   skipDependencyResolution: {{ .Values.skipDependencyResolution }}
+{{- end }}

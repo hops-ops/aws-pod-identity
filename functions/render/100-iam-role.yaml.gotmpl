@@ -1,0 +1,58 @@
+# code: language=yaml
+#
+# IAM Role for Pod Identity
+# Depends on: 005-state-podidentity ($state.podIdentity)
+#
+---
+apiVersion: iam.aws.m.upbound.io/v1beta1
+kind: Role
+metadata:
+  name: {{ $state.podIdentity.role.name }}
+  annotations:
+    {{ setResourceNameAnnotation "pod-identity-role" }}
+    {{- if $state.podIdentity.role.externalName }}
+    crossplane.io/external-name: {{ $state.podIdentity.role.externalName }}
+    {{- end }}
+  labels: {{ $state.podIdentity.labels | toJson }}
+spec:
+  providerConfigRef:
+    name: {{ $state.podIdentity.providerConfig.name }}
+    kind: {{ $state.podIdentity.providerConfig.kind }}
+  managementPolicies: {{ $state.podIdentity.managementPolicies | toJson }}
+  forProvider:
+    assumeRolePolicy: |
+      {
+        "Version":"2012-10-17",
+        "Statement":[
+          {
+            "Sid":"AllowEksAuthToAssumeRoleForPodIdentity",
+            "Effect":"Allow",
+            "Principal":{
+              "Service":"pods.eks.amazonaws.com"
+            },
+            "Action":[
+              "sts:AssumeRole",
+              "sts:TagSession"
+            ]
+          }
+        ]
+      }
+    {{- if $state.podIdentity.role.inlinePolicies }}
+    inlinePolicy:
+      {{- range $policy := $state.podIdentity.role.inlinePolicies }}
+      - name: {{ $policy.name }}
+        policy: |
+          {{- $policy.policy | nindent 10 }}
+      {{- end }}
+    {{- end }}
+    {{- if $state.podIdentity.role.managedPolicyArns }}
+    managedPolicyArns:
+      {{- range $arn := $state.podIdentity.role.managedPolicyArns }}
+      - {{ $arn }}
+      {{- end }}
+    {{- end }}
+    {{- if $state.podIdentity.role.permissionsBoundaryArn }}
+    permissionsBoundary: {{ $state.podIdentity.role.permissionsBoundaryArn }}
+    {{- end }}
+    tags: {{ $state.podIdentity.tags | toJson }}
+

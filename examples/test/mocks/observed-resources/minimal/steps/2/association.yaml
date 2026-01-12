@@ -1,0 +1,20 @@
+# Step 2: PodIdentityAssociation becomes Ready
+apiVersion: eks.aws.m.upbound.io/v1beta1
+kind: PodIdentityAssociation
+metadata:
+  name: cluster-x-example
+  annotations:
+    crossplane.io/composition-resource-name: pod-identity-association
+    gotemplating.fn.crossplane.io/composition-resource-name: pod-identity-association
+  labels:
+    hops.ops.com.ai/managed: "true"
+    hops.ops.com.ai/podidentity: example
+status:
+  conditions:
+    - type: Ready
+      status: "True"
+    - type: Synced
+      status: "True"
+  atProvider:
+    id: "a-abcdef1234567890abcdef1234567890"
+    roleArn: "arn:aws:iam::123456789012:role/cluster-x-example"

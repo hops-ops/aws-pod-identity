@@ -23,35 +23,46 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
+  id-token: write  # Required for OIDC auth
 
 jobs:
   validate:
-    uses: unbounded-tech/workflows-crossplane/.github/workflows/validate.yaml@v2.0.0
+    uses: unbounded-tech/workflows-crossplane/.github/workflows/validate.yaml@v2.7.0
     with:
       examples: |
         [
+          { "example": "examples/podidentities/example-minimal.yaml" },
+          { "example": "examples/podidentities/example-minimal.yaml", "observed_resources": "examples/test/mocks/observed-resources/minimal/steps/1/" },
+          { "example": "examples/podidentities/example-minimal.yaml", "observed_resources": "examples/test/mocks/observed-resources/minimal/steps/2/" },
           { "example": "examples/podidentities/full-schema.yaml" },
-          { "example": "examples/podidentities/example-minimal.yaml" }
+          { "example": "examples/podidentities/full-schema.yaml", "observed_resources": "examples/test/mocks/observed-resources/full/steps/1/" },
+          { "example": "examples/podidentities/full-schema.yaml", "observed_resources": "examples/test/mocks/observed-resources/full/steps/2/" }
         ]
       api_path: apis/podidentities
       error_on_missing_schemas: true
 
   test:
-    uses: unbounded-tech/workflows-crossplane/.github/workflows/test.yaml@v2.0.0
+    uses: unbounded-tech/workflows-crossplane/.github/workflows/test.yaml@v2.7.0
 
   e2e:
-    uses: unbounded-tech/workflows-crossplane/.github/workflows/e2e.yaml@v2.0.0
-    secrets:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    uses: unbounded-tech/workflows-crossplane/.github/workflows/e2e.yaml@v2.7.0
     with:
       aws: true
+      aws-use-oidc: true
+      aws-account-id: "034489662075"
+      aws-region: us-east-2
+      debug-resource-types: |
+        [
+          "networks.hops.ops.com.ai",
+          "autoeksclusters.hops.ops.com.ai",
+        ]
+      timeout-minutes: 30
 
   publish:
     needs:
       - validate
       - test
-    uses: unbounded-tech/workflows-crossplane/.github/workflows/publish.yaml@v2.0.0
+    uses: unbounded-tech/workflows-crossplane/.github/workflows/publish.yaml@v2.7.0
     secrets: inherit
     with:
       tag: pr-${{ github.event.pull_request.number }}-${{ github.sha }}

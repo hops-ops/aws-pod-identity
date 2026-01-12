@@ -1,0 +1,49 @@
+# Example: Importing existing IAM Role and Pod Identity Association
+# Use this pattern when adopting pre-existing AWS resources into Crossplane management.
+#
+# The managementPolicies without "Delete" creates orphan behavior:
+# - Crossplane will observe and update the resources
+# - Deleting the claim will NOT delete the AWS resources
+#
+# To get external names after first creation:
+#   kubectl get role <name> -o jsonpath='{.metadata.annotations.crossplane\.io/external-name}'
+#   kubectl get podidentityassociation <name> -o jsonpath='{.status.atProvider.id}'
+apiVersion: aws.hops.ops.com.ai/v1alpha1
+kind: PodIdentity
+metadata:
+  name: imported-example
+  namespace: default
+spec:
+  clusterName: my-cluster
+  region: us-west-2
+  # Orphan policy - resources persist in AWS after claim deletion
+  managementPolicies:
+    - Create
+    - Observe
+    - Update
+    - LateInitialize
+  serviceAccount:
+    namespace: monitoring
+    name: prometheus
+  # Import existing IAM role by name
+  role:
+    externalName: my-existing-role
+  # Import existing association by ID (get from AWS console or CLI)
+  association:
+    externalName: a-0123456789abcdef0
+  inlinePolicy:
+    - name: monitoring-policy
+      policy: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "cloudwatch:GetMetricData",
+                        "cloudwatch:ListMetrics"
+                    ],
+                    "Resource": "*"
+                }
+            ]
+        }
