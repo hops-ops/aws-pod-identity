@@ -49,8 +49,8 @@ jobs:
       aws-region: us-east-2
       debug-resource-types: |
         [
-          "networks.hops.ops.com.ai",
-          "autoeksclusters.hops.ops.com.ai",
+          "networks.aws.hops.ops.com.ai",
+          "autoeksclusters.aws.hops.ops.com.ai",
         ]
       timeout-minutes: 45
       cleanup-timeout-minutes: 45
