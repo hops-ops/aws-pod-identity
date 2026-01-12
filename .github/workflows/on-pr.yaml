@@ -56,7 +56,8 @@ jobs:
           "networks.hops.ops.com.ai",
           "autoeksclusters.hops.ops.com.ai",
         ]
-      timeout-minutes: 30
+      timeout-minutes: 45
+      cleanup-timeout-minutes: 45
 
   publish:
     needs:
