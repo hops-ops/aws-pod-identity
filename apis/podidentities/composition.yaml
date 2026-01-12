@@ -9,7 +9,7 @@ spec:
   mode: Pipeline
   pipeline:
     - functionRef:
-        name: hops-ops-configuration-aws-eks-pod-identityrender
+        name: hops-ops-aws-pod-identityrender
       step: render
     - functionRef:
         name: crossplane-contrib-function-auto-ready

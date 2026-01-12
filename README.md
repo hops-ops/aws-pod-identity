@@ -16,9 +16,9 @@ A Crossplane configuration that provisions IAM roles and EKS Pod Identity associ
 apiVersion: pkg.crossplane.io/v1
 kind: Configuration
 metadata:
-  name: configuration-aws-eks-pod-identity
+  name: aws-pod-identity
 spec:
-  package: ghcr.io/hops-ops/configuration-aws-eks-pod-identity:latest
+  package: ghcr.io/hops-ops/aws-pod-identity:latest
   packagePullSecrets:
     - name: ghcr
 ```
