@@ -54,5 +54,5 @@ spec:
     {{- if $state.podIdentity.role.permissionsBoundaryArn }}
     permissionsBoundary: {{ $state.podIdentity.role.permissionsBoundaryArn }}
     {{- end }}
-    tags: {{ $state.podIdentity.tags | toJson }}
+    tags: {{ merge (dict "Name" $state.podIdentity.role.name) $state.podIdentity.tags | toJson }}
 
