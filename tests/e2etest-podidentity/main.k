@@ -3,9 +3,11 @@
 # Tests IAM role and Pod Identity Association creation for EKS workloads.
 #
 # This test creates:
-# 1. A Network (from aws-network configuration) to provision VPC and subnets
-# 2. An AutoEKSCluster using subnet selector to find Network's private subnets
-# 3. A PodIdentity that creates IAM role and associates it with the cluster
+# 1. An AutoEKSCluster using subnet IDs from the persistent hops-test network
+# 2. A PodIdentity that creates IAM role and associates it with the cluster
+#
+# Uses persistent network infrastructure from aws-network e2e test (hops-test)
+# to speed up test execution by avoiding network creation/deletion.
 #
 # Prerequisites:
 # 1. Create secrets/aws-creds file with AWS credentials in INI format:
@@ -13,7 +15,9 @@
 #    aws_access_key_id = AKIA...
 #    aws_secret_access_key = ...
 #
-# 2. Run: make e2e
+# 2. Ensure the persistent hops-test network exists (from aws-network e2e test)
+#
+# 3. Run: make e2e
 #
 # Get resource IDs after first run:
 #   kubectl get role <name> -o jsonpath='{.metadata.annotations.crossplane\.io/external-name}'
@@ -39,9 +43,14 @@ _namespace = "default"
 _region = "us-east-2"
 _account_id = "034489662075"  # CI test account
 
-# IPAM Pool - from aws-ipam e2e test
-# Get pool IDs: aws ec2 describe-ipam-pools --query 'IpamPools[*].[IpamPoolId,AddressFamily,Description]' --output table
-_ipv4_private_pool_id = "ipam-pool-0607416fa3707147a"
+# =============================================================================
+# Persistent Network Infrastructure (from aws-network e2e test - hops-test)
+# =============================================================================
+# Private subnet IDs for the EKS cluster - these are already created and orphaned
+_private_subnet_ids = [
+    "subnet-0ba2f584c25e9435d"  # private-a
+    "subnet-02e4d512f8859e684"  # private-b
+]
 
 # =============================================================================
 # IAM Policy for PodIdentity test
@@ -78,17 +87,6 @@ _items = [
 
             # initResources: Install dependency Configuration packages
             initResources = [
-                # aws-network Configuration package (provides Network XRD)
-                {
-                    apiVersion = "pkg.crossplane.io/v1"
-                    kind = "Configuration"
-                    metadata = {
-                        name = "aws-network"
-                    }
-                    spec = {
-                        package = "ghcr.io/hops-ops/aws-network:v0.5.0"
-                    }
-                }
                 # aws-auto-eks-cluster Configuration package (provides AutoEKSCluster XRD)
                 {
                     apiVersion = "pkg.crossplane.io/v1"
@@ -137,53 +135,10 @@ _items = [
                 }
             ]
 
-            # manifests: All XRs that need cleanup (Network, AutoEKSCluster, PodIdentity)
+            # manifests: All XRs that need cleanup (AutoEKSCluster, PodIdentity)
+            # Note: Uses persistent hops-test network - no Network manifest needed
             manifests = [
-                # 1. Network - provides VPC and subnets using IPAM
-                {
-                    apiVersion = "aws.hops.ops.com.ai/v1alpha1"
-                    kind = "Network"
-                    metadata = {
-                        name = _test_name
-                        namespace = _namespace
-                    }
-                    spec = {
-                        region = _region
-                        providerConfigRef = {
-                            name = "default"
-                            kind = "ProviderConfig"
-                        }
-                        tags = {
-                            "e2etest" = "true"
-                            "test-run" = _now
-                        }
-                        # Use IPAM to auto-allocate VPC CIDR
-                        ipam = {
-                            ipv4 = {
-                                enabled = True
-                                poolId = _ipv4_private_pool_id
-                                netmaskLength = 16
-                            }
-                        }
-                        subnetLayout = {
-                            availabilityZones = ["a", "b"]
-                            public = {
-                                enabled = True
-                                netmaskLength = 24
-                            }
-                            private = {
-                                enabled = True
-                                netmaskLength = 20
-                            }
-                        }
-                        # Disable NAT to speed up test
-                        nat = {
-                            enabled = False
-                        }
-                    }
-                }
-
-                # 2. AutoEKSCluster - uses Network's private subnets
+                # 1. AutoEKSCluster - uses subnet IDs from persistent hops-test network
                 {
                     apiVersion = "aws.hops.ops.com.ai/v1alpha1"
                     kind = "AutoEKSCluster"
@@ -196,12 +151,7 @@ _items = [
                         region = _region
                         accountId = _account_id
                         version = "1.34"
-                        subnetSelector = {
-                            matchLabels = {
-                                "hops.ops.com.ai/network" = _test_name
-                                "hops.ops.com.ai/tier" = "private"
-                            }
-                        }
+                        subnetIds = _private_subnet_ids
                         providerConfigRef = {
                             name = "default"
                             kind = "ProviderConfig"
@@ -220,7 +170,7 @@ _items = [
                     }
                 }
 
-                # 3. PodIdentity - creates IAM role and Pod Identity Association
+                # 2. PodIdentity - creates IAM role and Pod Identity Association
                 hops.PodIdentity {
                     metadata = {
                         name = _test_name
