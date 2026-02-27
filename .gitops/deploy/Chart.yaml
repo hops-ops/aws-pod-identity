@@ -1,5 +1,5 @@
 apiVersion: v2
 name: aws-pod-identity
-version: 0.0.0
+version: 0.7.0
 description: Crossplane configuration package for AWS Pod Identity
 appVersion: v0.0.0
