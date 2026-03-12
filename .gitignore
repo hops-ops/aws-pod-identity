@@ -11,3 +11,4 @@ _output/
 # E2E test credentials (CRITICAL - never commit secrets)
 **/aws-creds
 tests/**/secrets/
+tests/**/env/
