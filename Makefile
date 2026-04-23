@@ -4,6 +4,7 @@ PACKAGE ?= configuration-aws-pod-identity
 XRD_DIR := apis/podidentities
 COMPOSITION := $(XRD_DIR)/composition.yaml
 DEFINITION := $(XRD_DIR)/definition.yaml
+CONFIGURATION := $(XRD_DIR)/configuration.yaml
 EXAMPLE_DEFAULT := examples/podidentities/full-schema.yaml
 RENDER_TESTS := $(wildcard tests/test-*)
 E2E_TESTS := $(wildcard tests/e2etest-*)
@@ -22,9 +23,14 @@ clean:
 	rm -rf _output
 	rm -rf .up
 	rm -rf ~/.up/cache
+	rm -f $(CONFIGURATION)
 
 build:
 	up project build
+
+generate-configuration:
+	@set -euo pipefail; \
+	hops validate generate-configuration --path . --api-path "$(XRD_DIR)"
 
 # Render all examples
 render\:all:
@@ -42,7 +48,7 @@ render\:all:
 	done
 
 # Validate all examples
-validate\:all:
+validate\:all: generate-configuration
 	@for entry in $(EXAMPLES); do \
 		example=$${entry%%::*}; \
 		observed=$${entry#*::}; \
@@ -61,8 +67,9 @@ validate\:all:
 	done
 
 # Shorthand aliases
-render: render\:all
-validate: validate\:all
+.PHONY: render validate generate-configuration
+render: ; @$(MAKE) 'render:all'
+validate: ; @$(MAKE) generate-configuration 'validate:all'
 
 # Single example render (usage: make render:example-minimal)
 render\:%:
@@ -76,7 +83,7 @@ render\:%:
 	fi
 
 # Single example validate (usage: make validate:example-minimal)
-validate\:%:
+validate\:%: generate-configuration
 	@example="examples/podidentities/$*.yaml"; \
 	if [ -f "$$example" ]; then \
 		echo "=== Validating $$example ==="; \
