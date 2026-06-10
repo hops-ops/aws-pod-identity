@@ -39,9 +39,9 @@
 # ==============================================================================
 {{- $association := dict
   "name" $eff.association.name
+  "create" $eff.association.create
   "externalName" $eff.association.externalName
 }}
 {{- $podIdentity = set $podIdentity "association" $association }}
 
 {{- $state = set $state "podIdentity" $podIdentity }}
-

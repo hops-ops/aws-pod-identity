@@ -135,6 +135,58 @@ _items = [
             timeoutSeconds: 120
             validate: True
         }
+    },
+    metav1alpha1.CompositionTest{
+        metadata.name: "test-pod-identity-role-only"
+        spec= {
+            assertResources: [
+                {
+                    apiVersion: "iam.aws.m.upbound.io/v1beta1"
+                    kind: "Role"
+                    metadata: {
+                        name: "cluster-x-example"
+                    }
+                    spec: {
+                        managementPolicies: ["*"]
+                        providerConfigRef: {
+                            name: "cluster-x"
+                        }
+                        forProvider: {
+                            managedPolicyArns: [
+                                "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
+                            ]
+                        }
+                    }
+                }
+            ]
+            compositionPath: "apis/podidentities/composition.yaml"
+            xrdPath: "apis/podidentities/definition.yaml"
+            timeoutSeconds: 120
+            validate: True
+            xr: {
+                apiVersion: "aws.hops.ops.com.ai/v1alpha1"
+                kind: "PodIdentity"
+                metadata: {
+                    name: "example"
+                    namespace: "default"
+                }
+                spec: {
+                    region: "us-west-2"
+                    clusterName: "cluster-x"
+                    managementPolicies: ["*"]
+                    serviceAccount: {
+                        namespace: "kube-system"
+                        name: "efs-csi-controller-sa"
+                    }
+                    managedPolicyArns: [
+                        "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
+                    ]
+                    association: {
+                        create: False
+                    }
+                }
+            }
+        }
     }
 ]
 items= _items

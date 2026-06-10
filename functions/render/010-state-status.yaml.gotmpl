@@ -8,7 +8,11 @@
 {{- $obs := $state.observed }}
 
 # Overall readiness
-{{- $ready := and ($obs.role.ready | default false) ($obs.association.ready | default false) }}
+{{- $associationReady := true }}
+{{- if $eff.association.create }}
+  {{- $associationReady = $obs.association.ready | default false }}
+{{- end }}
+{{- $ready := and ($obs.role.ready | default false) $associationReady }}
 
 # Compute status values
 {{- $state = set $state "status" (dict
@@ -26,13 +30,13 @@
   )
   "association" (dict
     "name" $eff.association.name
+    "create" $eff.association.create
     "id" ($obs.association.id | default "")
     "roleArn" (($obs.association.roleArn | default "") | default ($obs.role.arn | default "Pending"))
-    "ready" ($obs.association.ready | default false)
+    "ready" $associationReady
   )
   "spec" (dict
     "raw" $state.spec.raw
     "effective" $eff
   )
 ) }}
-

@@ -3,6 +3,7 @@
 # Pod Identity Association
 # Depends on: 005-state-podidentity ($state.podIdentity)
 #
+{{- if $state.podIdentity.association.create }}
 ---
 apiVersion: eks.aws.m.upbound.io/v1beta1
 kind: PodIdentityAssociation
@@ -36,11 +37,12 @@ spec:
       matchLabels:
         hops.ops.com.ai/podidentity: {{ $state.podIdentity.name }}
     serviceAccount: {{ $state.podIdentity.serviceAccount.name }}
+{{- end }}
 
 # ==============================================================================
 # Usage: Role protected by PodIdentityAssociation
 # ==============================================================================
-{{- if and $state.observed.role.ready $state.observed.association.ready }}
+{{- if and $state.podIdentity.association.create $state.observed.role.ready $state.observed.association.ready }}
 ---
 apiVersion: protection.crossplane.io/v1beta1
 kind: Usage
@@ -61,4 +63,3 @@ spec:
     resourceRef:
       name: {{ $state.podIdentity.association.name }}
 {{- end }}
-

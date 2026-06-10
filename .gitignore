@@ -12,3 +12,4 @@ _output/
 **/aws-creds
 tests/**/secrets/
 tests/**/env/
+apis/**/configuration.yaml

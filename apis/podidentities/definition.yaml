@@ -182,8 +182,12 @@ spec:
                       description: External name of existing IAM role to import. Leave empty to create new. The external name is the role name (not ARN).
                 association:
                   type: object
-                  description: Pod Identity Association configuration for import scenarios.
+                  description: Pod Identity Association configuration.
                   properties:
+                    create:
+                      type: boolean
+                      default: true
+                      description: Whether to create a standalone Pod Identity Association. Disable this when another resource, such as an EKS Addon, owns the association.
                     externalName:
                       type: string
                       description: External name of existing Pod Identity Association to import. Leave empty to create new. Format is the association ID.

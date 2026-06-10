@@ -5,12 +5,12 @@ metadata:
   annotations:
     meta.crossplane.io/maintainer: Patrick Lee Scott
     meta.crossplane.io/source: github.com/hops-ops/aws-pod-identity
-    meta.crossplane.io/description: A configuration package that defines hops's AWS Pod Identity association.
+    meta.crossplane.io/description: XRD for configuring AWS Pod Identity associations for service accounts.
 spec:
   dependsOn:
-    - provider: xpkg.crossplane.io/crossplane-contrib/provider-aws-eks
-      version: ">=v2.5.0"
-    - provider: xpkg.crossplane.io/crossplane-contrib/provider-aws-iam
-      version: ">=v2.5.0"
-    - function: xpkg.crossplane.io/crossplane-contrib/function-auto-ready
-      version: ">=v0.6.5"
+  - provider: xpkg.crossplane.io/crossplane-contrib/provider-aws-eks
+    version: '>=v2'
+  - provider: xpkg.crossplane.io/crossplane-contrib/provider-aws-iam
+    version: '>=v2'
+  - function: xpkg.crossplane.io/crossplane-contrib/function-auto-ready
+    version: '>=v0.6.5'

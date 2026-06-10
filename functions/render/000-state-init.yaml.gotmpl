@@ -60,6 +60,10 @@
 {{- $associationSpec := $spec.association | default dict }}
 {{- $roleExternalName := $roleSpec.externalName | default "" }}
 {{- $associationExternalName := $associationSpec.externalName | default "" }}
+{{- $associationCreate := true }}
+{{- if hasKey $associationSpec "create" }}
+  {{- $associationCreate = $associationSpec.create }}
+{{- end }}
 
 # ==============================================================================
 # Initialize $state namespace
@@ -92,6 +96,7 @@
       )
       "association" (dict
         "name" $podIdentityAssociationName
+        "create" $associationCreate
         "externalName" $associationExternalName
       )
     )
