@@ -8,7 +8,7 @@ A Crossplane configuration that provisions IAM roles and EKS Pod Identity associ
 
 - Amazon EKS cluster with Pod Identity agent installed
 - Crossplane installed in your cluster
-- Required providers: `provider-aws-iam` (≥ v2.1.1), `provider-aws-eks` (≥ v2.1.1)
+- Required providers: `provider-family-aws` (`^v2`), `provider-aws-iam` (`^v2`), `provider-aws-eks` (`^v2`)
 
 ### Installation
 
