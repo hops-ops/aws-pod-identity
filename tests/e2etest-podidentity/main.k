@@ -77,8 +77,10 @@ _items = [
         metadata.name = "podidentity"
         spec = {
             crossplane = {
-                version = "2.0.2-up.5"
-                autoUpgrade.channel = "None"
+                # Match aws-auto-eks-cluster's own e2e and aws-dns-stack:
+                # v2.x of the cluster package is exercised on the Rapid channel,
+                # not the old pinned 2.0.2-up.5.
+                autoUpgrade.channel = "Rapid"
             }
             defaultConditions = ["Ready"]
             timeoutSeconds = 5400  # 90 minutes for EKS cluster creation
@@ -95,7 +97,7 @@ _items = [
                         name = "aws-auto-eks-cluster"
                     }
                     spec = {
-                        package = "ghcr.io/hops-ops/aws-auto-eks-cluster:v0.1.0"
+                        package = "ghcr.io/hops-ops/aws-auto-eks-cluster:v2.2.1"
                     }
                 }
             ]
