@@ -41,7 +41,7 @@ jobs:
     uses: unbounded-tech/workflows-crossplane/.github/workflows/test.yaml@v2.20.0
 
   e2e:
-    uses: unbounded-tech/workflows-crossplane/.github/workflows/e2e.yaml@v2.20.0
+    uses: hops-ops/workflows-crossplane/.github/workflows/e2e.yaml@v3.2.0
     with:
       aws: true
       aws-use-oidc: true
@@ -54,6 +54,8 @@ jobs:
         ]
       timeout-minutes: 45
       cleanup-timeout-minutes: 45
+      # creds must outlive test (45) + cleanup (45) + setup; default 3600 expired mid-cleanup
+      aws-role-duration-seconds: 7200
       write-env-files: true
       env-vars: |
         {
