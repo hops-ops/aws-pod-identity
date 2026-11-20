@@ -199,6 +199,29 @@ _items = [
                         }
                     }
                 }
+
+                # 3. Usage - keep the cluster until the PodIdentity (association) is gone
+                {
+                    apiVersion = "protection.crossplane.io/v1beta1"
+                    kind = "Usage"
+                    metadata = {
+                        name = _test_name + "-delete-podidentity-before-cluster"
+                        namespace = _namespace
+                    }
+                    spec = {
+                        replayDeletion = True
+                        of = {
+                            apiVersion = "aws.hops.ops.com.ai/v1alpha1"
+                            kind = "AutoEKSCluster"
+                            resourceRef = {name = _test_name}
+                        }
+                        by = {
+                            apiVersion = "aws.hops.ops.com.ai/v1alpha1"
+                            kind = "PodIdentity"
+                            resourceRef = {name = _test_name}
+                        }
+                    }
+                }
             ]
         }
     }
